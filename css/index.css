@@ -1,0 +1,204 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    font-family: 'Source Sans Pro', sans-serif;
+    font-weight: bold;
+}
+
+.header {
+    background-color: #4d94ff;
+    position: absolute;
+    width: 100%;
+    z-index: 10;
+    line-height: 37px;
+}
+
+.header .container-fluid {
+    position: relative;
+}
+
+.header h1 {
+    color: #fff;
+    letter-spacing: 1.2px;
+    font-size: 2.1em;
+    margin: 0;
+    padding: 10px 0 13px 55px;
+}
+
+h4 {
+    margin-top: 3%;
+    margin-left: 4.5%;
+    margin-bottom: 2.4%;
+    font-size: 2em;
+}
+
+button {
+    font-size: 1.5em;
+    margin-left: 4%;
+}
+
+#weatherContent {
+    margin-left: 4.5%;
+    font-size: 2em;
+}
+
+#loading {
+    top: 0;
+    left: 0;
+    position: fixed;
+    display: block;
+    opacity: 0.7;
+    background-color: #fff;
+    z-index: 99;
+    text-align: center;
+}
+
+#loading-image {
+    position: fixed;
+    /*top: 215px;
+    left: 470px;*/
+    top: 30%;
+    left: 35%;
+    z-index: 100;
+}
+
+a.pull-right {
+    float: right;
+    color: #fff;
+    margin-top: -3.7%;
+    font-size: 1.5em;
+}
+
+#toast {
+    visibility: hidden;
+    height: 50px;
+    /*margin-left: -125px;*/
+    max-width: 30%;
+    margin: auto;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 2px;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    right: 0;
+    bottom: 30px;
+    font-size: 17px;
+    white-space: nowrap;
+}
+
+#toast #desc {
+    color: #fff;
+    padding: 16px;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 1.1em;
+}
+
+#toast.show {
+    visibility: visible;
+    -webkit-animation: fadein 0.5s, expand 0.5s 0.5s, stay 3s 1s, shrink 0.5s 2s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, expand 0.5s 0.5s, stay 3s 1s, shrink 0.5s 4s, fadeout 0.5s 4.5s;
+}
+
+@-webkit-keyframes fadein {
+    from {
+        bottom: 0;
+        opacity: 0;
+    }
+    to {
+        bottom: 30px;
+        opacity: 1;
+    }
+}
+
+@keyframes fadein {
+    from {
+        bottom: 0;
+        opacity: 0;
+    }
+    to {
+        bottom: 30px;
+        opacity: 1;
+    }
+}
+
+@-webkit-keyframes expand {
+    from {
+        min-width: 50px
+    }
+    to {
+        min-width: 350px
+    }
+}
+
+@keyframes expand {
+    from {
+        min-width: 50px
+    }
+    to {
+        min-width: 350px
+    }
+}
+
+@-webkit-keyframes stay {
+    from {
+        min-width: 350px
+    }
+    to {
+        min-width: 350px
+    }
+}
+
+@keyframes stay {
+    from {
+        min-width: 350px
+    }
+    to {
+        min-width: 350px
+    }
+}
+
+@-webkit-keyframes shrink {
+    from {
+        min-width: 350px;
+    }
+    to {
+        min-width: 50px;
+    }
+}
+
+@keyframes shrink {
+    from {
+        min-width: 350px;
+    }
+    to {
+        min-width: 50px;
+    }
+}
+
+@-webkit-keyframes fadeout {
+    from {
+        bottom: 30px;
+        opacity: 1;
+    }
+    to {
+        bottom: 60px;
+        opacity: 0;
+    }
+}
+
+@keyframes fadeout {
+    from {
+        bottom: 30px;
+        opacity: 1;
+    }
+    to {
+        bottom: 60px;
+        opacity: 0;
+    }
+}
