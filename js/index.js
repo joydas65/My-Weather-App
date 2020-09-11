@@ -16,7 +16,7 @@ function formatUnixTime(unix_timestamp) {
 }
 
 function launch_toast() {
-    var x = document.getElementById("toast")
+    var x = document.getElementById("toast");
     x.className = "show";
     setTimeout(function() { x.className = x.className.replace("show", ""); }, 5000);
 }
@@ -47,15 +47,28 @@ function updateTime(k) {
     }
 }
 
+function setSunriseAndSunSetTime(sunRiseTime, sunSetTime) {
+    var ti = document.getElementById("currentTime").innerHTML;
+    if (ti.localeCompare(sunRiseTime) < 0) {
+        document.getElementById("sunriseTime").innerHTML = "Sun has not risen yet";
+        document.getElementById("sunsetTime").innerHTML = "Sun has not set yet";
+    } else if (ti.localeCompare(sunSetTime) < 0) {
+        document.getElementById("sunriseTime").innerHTML = sunRiseTime + " AM";
+        document.getElementById("sunsetTime").innerHTML = "Sun has not set yet";
+    } else {
+        document.getElementById("sunriseTime").innerHTML = sunRiseTime + " AM";
+        document.getElementById("sunsetTime").innerHTML = sunRiseTime + " PM";
+    }
+}
+
 function printDatas(response) {
-    var sunRiseTime = formatUnixTime(response.current.sunrise);
-    var sunSetTime = formatUnixTime(response.current.sunset);
+    var sunriseTime = formatUnixTime(response.current.sunrise);
+    var sunsetTime = formatUnixTime(response.current.sunset);
+    getCurrentTime();
     document.getElementById("weatherTimeZone").innerHTML = response.timezone;
-    document.getElementById("sunriseTime").innerHTML = sunRiseTime + " AM";
-    document.getElementById("sunsetTime").innerHTML = sunSetTime + " PM";
+    setSunriseAndSunSetTime(sunriseTime, sunsetTime);
     document.getElementById("windSpeed").innerHTML = response.current.wind_speed + " metre/sec";
     document.getElementById("cloud").innerHTML = response.current.clouds + " %";
-    getCurrentTime();
 }
 
 function success(position) {

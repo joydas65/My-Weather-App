@@ -68,8 +68,10 @@ button {
 a.pull-right {
     float: right;
     color: #fff;
-    margin-top: -3.7%;
     font-size: 1.5em;
+    position: absolute;
+    top: 18%;
+    left: 64%;
 }
 
 #toast {
