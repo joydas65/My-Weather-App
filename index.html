@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>My Own Project</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital@1&family=Source+Sans+Pro:wght@300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css">
+</head>
+
+<body>
+    <div id="loading">
+        <img id="loading-image" src="loading.gif" alt="Loading..." style="visibility: hidden;" />
+    </div>
+    <div class="header">
+        <div class="container-fluid">
+            <h1 class="pull-left">My Geolocation App</h1>
+            <a href="international.html" class="pull-right">Know about International Weather</a>
+        </div>
+    </div>
+    <br><br>
+    <h4>Hi I'm Joy, working as Software Engineer at CDK Global.
+        <br> I've built an app. It can fetch current weather details of the place you are living in.<br> Click the button below, weather details will appear and button will vanish.
+    </h4>
+    <hr>
+    <button id="fetchPositionButton" onclick="getPosition()">Click Me</button>
+    <div id="weatherContent">
+        <p>Timezone - <span id="weatherTimeZone"></span></p>
+        <p>Current Time - <span id="currentTime"></span></p>
+        <p>Sunrise - <span id="sunriseTime"></span></p>
+        <p>Sunset - <span id="sunsetTime"></span></p>
+        <p>Cloud cover - <span id="cloud"></span></p>
+        <p>Wind speed - <span id="windSpeed"></span></p>
+    </div>
+    <div id="toast">
+        <div id="desc">Please click on allow to know weather details..</div>
+    </div>
+    <script src="js/index.js">
+    </script>
+</body>
+
+</html>
