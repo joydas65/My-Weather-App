@@ -78,7 +78,7 @@ a.pull-right {
     visibility: hidden;
     height: 50px;
     /*margin-left: -125px;*/
-    max-width: 30%;
+    max-width: 100%;
     margin: auto;
     background-color: #333;
     color: #fff;
@@ -95,10 +95,10 @@ a.pull-right {
 
 #toast #desc {
     color: #fff;
-    padding: 16px;
+    padding-top: 7px;
     overflow: hidden;
     white-space: nowrap;
-    font-size: 1.1em;
+    font-size: 1.2em;
 }
 
 #toast.show {
