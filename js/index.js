@@ -30,6 +30,7 @@ function obtainCurrentTime(unix_timestamp, isItSunrise, isItSunset) {
     }
     if (isItSunrise === false && isItSunset === false) {
         document.getElementById("currentTime").innerText = time; /* adding time to the div */
+        document.getElementById("showDate").innerHTML = date.getDate() + "/" + String(Number(date.getMonth() + 1)) + "/" + date.getFullYear();
     } else if (isItSunrise === true && isItSunset === false) {
         sunriseTime = time;
     } else if (isItSunset === true && isItSunrise === false) {
@@ -76,6 +77,8 @@ function printDatas(response) {
     document.getElementById("windSpeed").innerHTML = response.current.wind_speed + " metre/sec";
     document.getElementById("cloud").innerHTML = response.current.clouds + " %";
     convertKelvinToCelsius(response.current.temp);
+    document.getElementById("weatherDescription").innerHTML = response.current.weather[0].description;
+    document.getElementById("weatherDescriptionImage").src = "http://openweathermap.org/img/wn/" + response.current.weather[0].icon + "@2x.png";
 }
 
 function success(position) {
