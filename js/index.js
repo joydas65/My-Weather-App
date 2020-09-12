@@ -59,8 +59,12 @@ function setSunriseAndSunSetTime(sunRiseTime, sunSetTime) {
         document.getElementById("sunsetTime").innerHTML = "Sun has not set yet";
     } else {
         document.getElementById("sunriseTime").innerHTML = sunRiseTime;
-        document.getElementById("sunsetTime").innerHTML = sunRiseTime;
+        document.getElementById("sunsetTime").innerHTML = sunSetTime;
     }
+}
+
+function convertKelvinToCelsius(temperature) {
+    document.getElementById("showTemperature").innerHTML = String(temperature - 273.15);
 }
 
 function printDatas(response) {
@@ -71,6 +75,7 @@ function printDatas(response) {
     setSunriseAndSunSetTime(sunriseTime, sunsetTime);
     document.getElementById("windSpeed").innerHTML = response.current.wind_speed + " metre/sec";
     document.getElementById("cloud").innerHTML = response.current.clouds + " %";
+    convertKelvinToCelsius(response.current.temp);
 }
 
 function success(position) {
