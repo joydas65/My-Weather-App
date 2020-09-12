@@ -1,19 +1,7 @@
+var sunriseTime;
+var sunsetTime;
+
 document.getElementById("weatherContent").style.display = "none";
-
-function formatUnixTime(unix_timestamp) {
-
-    var date = new Date(unix_timestamp * 1000);
-
-    var hours = date.getHours();
-
-    var minutes = "0" + date.getMinutes();
-
-    var seconds = "0" + date.getSeconds();
-
-    var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-
-    return formattedTime;
-}
 
 function launch_toast() {
     var x = document.getElementById("toast");
@@ -21,22 +9,36 @@ function launch_toast() {
     setTimeout(function() { x.className = x.className.replace("show", ""); }, 5000);
 }
 
-function getCurrentTime() {
-    var date = new Date(); /* creating object of Date class */
+function obtainCurrentTime(unix_timestamp, isItSunrise, isItSunset) {
+    var date;
+    if (unix_timestamp === null || unix_timestamp === undefined) {
+        date = new Date();
+    } else {
+        date = new Date(unix_timestamp * 1000);
+    }
     var hour = date.getHours();
     var min = date.getMinutes();
     var sec = date.getSeconds();
     hour = updateTime(hour);
     min = updateTime(min);
     sec = updateTime(sec);
-    var time = " " + hour + " : " + min + " : " + sec;
+    var time = hour + ":" + min + ":" + sec;
     if (hour >= 12) {
         time += " PM";
     } else {
         time += " AM";
     }
-    document.getElementById("currentTime").innerText = time; /* adding time to the div */
-    var t = setTimeout(function() { getCurrentTime(); }, 1000); /* setting timer */
+    if (isItSunrise === false && isItSunset === false) {
+        document.getElementById("currentTime").innerText = time; /* adding time to the div */
+    } else if (isItSunrise === true && isItSunset === false) {
+        sunriseTime = time;
+    } else if (isItSunset === true && isItSunrise === false) {
+        sunsetTime = time;
+    }
+
+    if (unix_timestamp === null || unix_timestamp === undefined) {
+        var t = setTimeout(function() { obtainCurrentTime(undefined, false, false); }, 1000); /* setting timer */
+    }
 }
 
 function updateTime(k) {
@@ -53,18 +55,18 @@ function setSunriseAndSunSetTime(sunRiseTime, sunSetTime) {
         document.getElementById("sunriseTime").innerHTML = "Sun has not risen yet";
         document.getElementById("sunsetTime").innerHTML = "Sun has not set yet";
     } else if (ti.localeCompare(sunSetTime) < 0) {
-        document.getElementById("sunriseTime").innerHTML = sunRiseTime + " AM";
+        document.getElementById("sunriseTime").innerHTML = sunRiseTime;
         document.getElementById("sunsetTime").innerHTML = "Sun has not set yet";
     } else {
-        document.getElementById("sunriseTime").innerHTML = sunRiseTime + " AM";
-        document.getElementById("sunsetTime").innerHTML = sunRiseTime + " PM";
+        document.getElementById("sunriseTime").innerHTML = sunRiseTime;
+        document.getElementById("sunsetTime").innerHTML = sunRiseTime;
     }
 }
 
 function printDatas(response) {
-    var sunriseTime = formatUnixTime(response.current.sunrise);
-    var sunsetTime = formatUnixTime(response.current.sunset);
-    getCurrentTime();
+    obtainCurrentTime(response.current.sunrise, true, false);
+    obtainCurrentTime(response.current.sunset, false, true);
+    obtainCurrentTime(undefined, false, false);
     document.getElementById("weatherTimeZone").innerHTML = response.timezone;
     setSunriseAndSunSetTime(sunriseTime, sunsetTime);
     document.getElementById("windSpeed").innerHTML = response.current.wind_speed + " metre/sec";
