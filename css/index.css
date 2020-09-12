@@ -208,3 +208,8 @@ a.pull-right {
 span i {
     margin-right: 1%;
 }
+
+.degreeCelsius {
+    font-size: 0.9em;
+    font-weight: 100;
+}
