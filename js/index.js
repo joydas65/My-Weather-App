@@ -65,7 +65,7 @@ function setSunriseAndSunSetTime(sunRiseTime, sunSetTime) {
 }
 
 function convertKelvinToCelsius(temperature) {
-    document.getElementById("showTemperature").innerHTML = String(temperature - 273.15);
+    document.getElementById("showTemperature").innerHTML = String(Math.floor(temperature - 273.15));
 }
 
 function printDatas(response) {
