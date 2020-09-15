@@ -6,33 +6,18 @@ body {
     width: 100%;
     font-family: 'Source Sans Pro', sans-serif;
     font-weight: bold;
+    font-size: 110%;
 }
 
-.header {
-    background-color: #4d94ff;
-    position: absolute;
-    width: 100%;
-    z-index: 10;
-    line-height: 37px;
-}
-
-.header .container-fluid {
-    position: relative;
-}
-
-.header h1 {
-    color: #fff;
-    letter-spacing: 1.2px;
-    font-size: 2.1em;
-    margin: 0;
-    padding: 10px 0 13px 55px;
+p {
+    font-size: 110%;
 }
 
 h4 {
     margin-top: 3%;
     margin-left: 4.5%;
     margin-bottom: 2.4%;
-    font-size: 2em;
+    font-size: 135%;
 }
 
 button {
@@ -42,7 +27,6 @@ button {
 
 #weatherContent {
     margin-left: 4.5%;
-    font-size: 2em;
 }
 
 #loading {
@@ -57,11 +41,13 @@ button {
 }
 
 #loading-image {
+    margin: auto;
+    max-width: 50%;
     position: fixed;
+    top: 60%;
+    left: 35%;
     /*top: 215px;
     left: 470px;*/
-    top: 30%;
-    left: 35%;
     z-index: 100;
 }
 
@@ -76,7 +62,7 @@ a.pull-right {
 
 #toast {
     visibility: hidden;
-    height: 50px;
+    height: 40px;
     /*margin-left: -125px;*/
     max-width: 100%;
     margin: auto;
@@ -89,16 +75,13 @@ a.pull-right {
     left: 0;
     right: 0;
     bottom: 30px;
-    font-size: 17px;
     white-space: nowrap;
 }
 
 #toast #desc {
     color: #fff;
-    padding-top: 7px;
     overflow: hidden;
     white-space: nowrap;
-    font-size: 1.2em;
 }
 
 #toast.show {
@@ -212,4 +195,57 @@ span i {
 .degreeCelsius {
     font-size: 0.9em;
     font-weight: 600;
+}
+
+@media screen and (max-width: 768px) {
+    h4 {
+        font-size: 90%;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    html {
+        font-size: 80%;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    img#weatherDescriptionImage {
+        max-width: 25%;
+        height: auto;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    #loading-image {
+        max-width: 30%;
+        height: auto;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    #desc {
+        font-size: 60%;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    #toast {
+        height: 20px;
+        font-size: 105%;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    h1 {
+        font-size: 80%;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .table-responsive {
+        position: relative;
+        height: 90vh;
+        width: 90vw;
+    }
 }

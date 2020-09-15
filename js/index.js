@@ -1,6 +1,8 @@
 var sunriseTime;
 var sunsetTime;
 
+var windDirections = [];
+
 document.getElementById("weatherContent").style.display = "none";
 
 function launch_toast() {
@@ -64,21 +66,90 @@ function setSunriseAndSunSetTime(sunRiseTime, sunSetTime) {
     }
 }
 
-function convertKelvinToCelsius(temperature) {
-    document.getElementById("showTemperature").innerHTML = String(Math.floor(temperature - 273.15));
+function convertKelvinToCelsius(temperature, parameterID) {
+    document.getElementById(parameterID).innerHTML = String(Math.floor(temperature - 273.15));
+}
+
+function initialiseWindDirections() {
+    windDirections.push("N");
+    windDirections.push("N-NE");
+    windDirections.push("NE");
+    windDirections.push("E-NE");
+    windDirections.push("E");
+    windDirections.push("E-SE");
+    windDirections.push("SE");
+    windDirections.push("S-SE");
+    windDirections.push("S");
+    windDirections.push("S-SW");
+    windDirections.push("SW");
+    windDirections.push("W-SW");
+    windDirections.push("W");
+    windDirections.push("W-NW");
+    windDirections.push("NW");
+    windDirections.push("N-NW");
+    windDirections.push("N");
+}
+
+function obtainWindDirection(windDegree) {
+    windDegree = windDegree % 360;
+    windDegree = Math.floor(windDegree / 22.5);
+    windDegree = windDegree + 1;
+    document.getElementById("windDirection").innerHTML = windDirections[windDegree];
+}
+
+function drawLineGraphOfChanceOfRainForNext7Days(forecastedData) {
+    var chanceOfRainForNext7Days = [];
+    for (var i = 0; i < 7; i++) {
+        chanceOfRainForNext7Days.push(Math.floor((forecastedData[i].pop) * 100));
+    }
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var chart = new Chart(ctx, {
+        type: 'line',
+
+        // The data for our dataset
+        data: {
+            labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+            datasets: [{
+                label: 'Chance of rain for next 7 days',
+                fill: false,
+                backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                borderColor: 'rgb(255, 99, 132)',
+                data: chanceOfRainForNext7Days
+            }]
+        },
+
+        // Configuration options go here
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
 }
 
 function printDatas(response) {
-    obtainCurrentTime(response.current.sunrise, true, false);
-    obtainCurrentTime(response.current.sunset, false, true);
-    obtainCurrentTime(undefined, false, false);
-    document.getElementById("weatherTimeZone").innerHTML = response.timezone;
-    setSunriseAndSunSetTime(sunriseTime, sunsetTime);
-    document.getElementById("windSpeed").innerHTML = response.current.wind_speed + " metre/sec";
-    document.getElementById("cloud").innerHTML = response.current.clouds + " %";
-    convertKelvinToCelsius(response.current.temp);
-    document.getElementById("weatherDescription").innerHTML = response.current.weather[0].description;
-    document.getElementById("weatherDescriptionImage").src = "http://openweathermap.org/img/wn/" + response.current.weather[0].icon + "@2x.png";
+    try {
+        document.getElementById("showChart").style.display = "block";
+        obtainCurrentTime(response.current.sunrise, true, false);
+        obtainCurrentTime(response.current.sunset, false, true);
+        obtainCurrentTime(undefined, false, false);
+        document.getElementById("weatherTimeZone").innerHTML = response.timezone;
+        setSunriseAndSunSetTime(sunriseTime, sunsetTime);
+        document.getElementById("windSpeed").innerHTML = response.current.wind_speed + " metre/sec";
+        document.getElementById("cloud").innerHTML = response.current.clouds + " %";
+        convertKelvinToCelsius(response.current.temp, "showTemperature");
+        document.getElementById("weatherDescription").innerHTML = response.current.weather[0].description;
+        document.getElementById("weatherDescriptionImage").src = "http://openweathermap.org/img/wn/" + response.current.weather[0].icon + "@2x.png";
+        initialiseWindDirections();
+        obtainWindDirection(response.current.wind_deg);
+        document.getElementById("showHumidity").innerHTML = response.current.humidity + " %";
+        convertKelvinToCelsius(response.current.feels_like, "feelsLike");
+        drawLineGraphOfChanceOfRainForNext7Days(response.daily);
+        document.getElementById("weatherForecast").style.visibility = "visible";
+    } catch (e) {
+        document.getElementById("loading-image").style.visibility = "hidden";
+        launch_toast();
+        document.getElementById("desc").innerHTML = "Some error occurred. Sorry for the inconvenience";
+    }
 }
 
 function success(position) {
@@ -113,12 +184,11 @@ function error() {
     document.getElementById("loading-image").style.visibility = "hidden";
     document.getElementById("fetchPositionButton").style.display = "block";
     launch_toast();
-    console.log("Geo Location not working");
+    document.getElementById("desc").innerHTML = "Location Access is blocked. Please allow location access";
 }
 
 function getPosition() {
     document.getElementById("loading-image").style.visibility = "visible";
     document.getElementById("fetchPositionButton").style.display = "none";
     var positionValues = navigator.geolocation.getCurrentPosition(success, error);
-    console.log(positionValues);
 }
