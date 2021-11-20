@@ -9,7 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="css/index.css">
     <script src="https://use.fontawesome.com/a2e1add17a.js"></script>
-    <script src='https://kit.fontawesome.com/a076d05399.js'></script>
+    <!-- <script src='https://kit.fontawesome.com/a076d05399.js'></script> -->
+    <script src="https://kit.fontawesome.com/cdfa67e7d9.js" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
@@ -34,7 +35,7 @@
             </ul>
         </div>
     </nav>
-    <h4><strong>Hi I'm Joy, SDE @ Amazon with over 2+ years of experience</strong>
+    <h4><strong>Hi I'm Joy, SDE @ Amazon <i class="fa fa-amazon"></i> with over 2+ years of experience</strong>
         <br> I've built an app. It can fetch current weather details of the place you are living in.<br> Click the button below, weather details will appear and button will vanish.
     </h4>
     <hr>
@@ -44,34 +45,37 @@
         <p>Weather Description - <span id="weatherDescription"></span><img src="" id="weatherDescriptionImage" alt="Weather Description Image" title="Weather Description Image"></p>
         <div class="row">
             <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-                <p><span><i class='fas fa-map-marker-alt' style="color:#4d94ff"></i></span>Timezone - <span id="weatherTimeZone"></span></p>
+                <p><span class="marginRightTwoPercent"><i class='fas fa-map-marker-alt' style="color:#4d94ff"></i></span>Timezone - <span id="weatherTimeZone"></span></p>
             </div>
             <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-                <p><span><i class="fa fa-clock-o" style="color:#f05d5d" aria-hidden="true"></i></span> Current Time - <span id="currentTime"></span></p>
+                <p><span class="marginRightTwoPercent"><i class="fa fa-clock-o" style="font-weight: bold; color:#f05d5d;" aria-hidden="true"></i></span> Current Time - <span id="currentTime"></span></p>
             </div>
             <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-                <p><span><i class="fa fa-cloud" style="color:#6f7e91"></i></span>Cloud cover - <span id="cloud"></span></p>
+                <p><span><i class="fa fa-cloud" style="color:#6f7e91;"></i></span>Cloud cover - <span id="cloud"></span></p>
             </div>
             <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-                <p><span><i class="fa fa-sun" style="color:#FDB813"></i></span>Sunrise - <span id="sunriseTime"></span></p>
+                <p><span class="marginRightTwoPercent"><i class="fa fa-sun" style="color:#FDB813;"></i></span>Sunrise - <span id="sunriseTime"></span></p>
             </div>
             <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-                <p><span><i class="fa fa-moon" style="color:#25587C"></i></span>Sunset - <span id="sunsetTime"></span></p>
+                <p><span class="marginRightTwoPercent"><i class="fa fa-moon" style="color:#25587C;"></i></span>Sunset - <span id="sunsetTime"></span></p>
             </div>
             <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-                <p><span><i class="fa fa-paper-plane" style="color:#1E90FF"></i></span>Wind direction - <span id="windDirection"></span></p>
+                <p><span class="marginRightTwoPercent"><i class="fa fa-paper-plane" style="color:#1E90FF;"></i></span>Wind direction - <span id="windDirection"></span></p>
             </div>
             <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-                <p><span><i class="fa fa-wind" style="color:#82CAFA"></i></span>Wind speed - <span id="windSpeed"></span></p>
+                <p><span class="marginRightTwoPercent"><i class="fa fa-wind" style="color:#82CAFA;"></i></span>Wind speed - <span id="windSpeed"></span></p>
             </div>
             <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-                <p><span><i class='fas fa-temperature-high' style="color:red"></i></span>Temperature - <span id="showTemperature"></span>&nbsp;<span class="degreeCelsius">&#x2103;</span></p>
+                <p><span class="marginRightTwoPercent"><i class='fas fa-temperature-high' style="color:red;"></i></span>Temperature - <span id="showTemperature"></span>&nbsp;<span class="degreeCelsius">&#x2103;</span></p>
             </div>
             <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-                <p><span><i class="fas fa-temperature-low" style="color:red"></i></span>Feels like - <span id="feelsLike"></span>&nbsp;<span class="degreeCelsius">&#x2103;</span></p>
+                <p><span class="marginRightTwoPercent"><i class="fas fa-temperature-low" style="color:red;"></i></span>Feels like - <span id="feelsLike"></span>&nbsp;<span class="degreeCelsius">&#x2103;</span></p>
             </div>
             <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-                <p><span class="glyphicon glyphicon-tint"></span>Humidity - <span id="showHumidity"></span></p>
+                <p><span class="glyphicon glyphicon-signal marginRightTwoPercent"></span>Atmospheric pressure - <span id="atmosphericPressure"></span></p>
+            </div>
+            <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
+                <p><span class="glyphicon glyphicon-tint marginRightTwoPercent"></span>Humidity - <span id="showHumidity"></span></p>
             </div>
         </div>
     </div>
