@@ -8,7 +8,10 @@ document.getElementById("weatherContent").style.display = "none";
 function launch_toast() {
     var x = document.getElementById("toast");
     x.className = "show";
-    setTimeout(function() { x.className = x.className.replace("show", ""); }, 5000);
+    setTimeout(function() { 
+        x.className = x.className.replace("show", "");
+        document.getElementById("fetchPositionButton").style.display = "block";
+    }, 2000);
 }
 
 function obtainCurrentTime(unix_timestamp, isItSunrise, isItSunset) {
@@ -126,6 +129,17 @@ function drawLineGraphOfChanceOfRainForNext7Days(forecastedData) {
     });
 }
 
+function hideSpinnerAndWeatherDetails() {
+    document.getElementById("loading-image").style.visibility = "hidden";
+    document.getElementById("weatherContent").style.display = "none";
+}
+ 
+function handleError() {
+    hideSpinnerAndWeatherDetails();
+    launch_toast();
+    document.getElementById("desc").innerHTML = "Some error occurred. PLease try again later";
+}
+
 function printDatas(response) {
     try {
         document.getElementById("showChart").style.display = "block";
@@ -147,48 +161,50 @@ function printDatas(response) {
         document.getElementById("weatherForecast").style.visibility = "visible";
         document.getElementById("atmosphericPressure").innerHTML = response.current.pressure + " hPa";
     } catch (e) {
-        document.getElementById("loading-image").style.visibility = "hidden";
-        launch_toast();
-        document.getElementById("desc").innerHTML = "Some error occurred. Sorry for the inconvenience";
+        handleError();
     }
 }
 
 function success(position) {
-    var latitude = position.coords.latitude;
-    var longitude = position.coords.longitude;
+    try {
+        var latitude = position.coords.latitude;
+        var longitude = position.coords.longitude;
 
-    var request = new XMLHttpRequest();
+        var request = new XMLHttpRequest();
 
-    // Open a new connection, using the GET request on the URL endpoint
-    request.open('GET', 'https://api.openweathermap.org/data/2.5/onecall?lat=' + latitude + '&lon=' + longitude + '&appid=caea05c347ae37456e527d4f89f0243d', true);
+        // Open a new connection, using the GET request on the URL endpoint
+        request.open('GET', 'https://api.openweathermap.org/data/2.5/onecall?lat=' + latitude + '&lon=' + longitude + '&appid=caea05c347ae37456e527d4f89f0243d', true);
 
-    request.onload = function() {
-        // Begin accessing JSON data here
-        var data = JSON.parse(this.response);
+        request.onload = function() {
+            // Begin accessing JSON data here
+            var data = JSON.parse(this.response);
 
-        if (request.status >= 200 && request.status < 400) {
-            document.getElementById("weatherContent").style.display = "block";
-            printDatas(data);
-            //console.log(data.current.clouds);
-        } else {
-            console.log('error');
-        }
+            if (request.status >= 200 && request.status < 400) {
+                document.getElementById("weatherContent").style.display = "block";
+                printDatas(data);
+                //console.log(data.current.clouds);
+            } else {
+                console.log('error');
+            }
 
-        document.getElementById("loading-image").style.visibility = "hidden";
-    };
+            document.getElementById("loading-image").style.visibility = "hidden";
+        };
 
-    // Send request
-    request.send();
+        // Send request
+        request.send();
+    } catch (e) {
+        handleError();
+    }
 }
 
 function error() {
-    document.getElementById("loading-image").style.visibility = "hidden";
-    document.getElementById("fetchPositionButton").style.display = "block";
+    hideSpinnerAndWeatherDetails();
     launch_toast();
     document.getElementById("desc").innerHTML = "Location Access is blocked. Please allow location access";
 }
 
 function getPosition() {
+    document.getElementById("toast").style.display = "none";
     document.getElementById("loading-image").style.visibility = "visible";
     document.getElementById("fetchPositionButton").style.display = "none";
     var positionValues = navigator.geolocation.getCurrentPosition(success, error);
