@@ -3,6 +3,21 @@ var sunsetTime;
 
 var windDirections = [];
 
+var monthToDigitsMap = {};
+
+monthToDigitsMap[0] = 'Jan'
+monthToDigitsMap[1] = 'Feb'
+monthToDigitsMap[2] = 'Mar'
+monthToDigitsMap[3] = 'April'
+monthToDigitsMap[4] = 'May'
+monthToDigitsMap[5] = 'June'
+monthToDigitsMap[6] = 'July'
+monthToDigitsMap[7] = 'Aug'
+monthToDigitsMap[8] = 'Sept'
+monthToDigitsMap[9] = 'Oct'
+monthToDigitsMap[10] = 'Nov'
+monthToDigitsMap[11] = 'Dec'
+
 document.getElementById("weatherContent").style.display = "none";
 
 function launch_toast() {
@@ -73,6 +88,10 @@ function convertKelvinToCelsius(temperature, parameterID) {
     document.getElementById(parameterID).innerHTML = String(Math.floor(temperature - 273.15));
 }
 
+function convertMetreToKilometre(metre, parameterID) {
+    document.getElementById(parameterID).innerHTML = String(metre / 1000) + " km";
+}
+
 function initialiseWindDirections() {
     windDirections.push("N");
     windDirections.push("N-NE");
@@ -101,8 +120,26 @@ function obtainWindDirection(windDegree) {
 }
 
 function drawLineGraphOfChanceOfRainForNext7Days(forecastedData) {
+    var todayDate = new Date()
+    var currentMonth = todayDate.getMonth()
+    var currentDay = todayDate.getDate()
     var chanceOfRainForNext7Days = [];
-    for (var i = 0; i < 7; i++) {
+
+    //fill up the x-axis labels for rain forecasts
+    var xAxisLabels = []
+
+    xAxisLabels.push(monthToDigitsMap[currentMonth] + " " + currentDay)
+
+    for (var i = 1; i <= 7; i++) {
+
+        todayDate.setDate(todayDate.getDate() + 1)
+
+        xAxisLabels.push(monthToDigitsMap[new Date(todayDate).getMonth()] + " " + new Date(todayDate).getDate())
+    }
+
+    console.log(xAxisLabels)
+
+    for (var i = 0; i < 8; i++) {
         chanceOfRainForNext7Days.push(Math.floor((forecastedData[i].pop) * 100));
     }
     var ctx = document.getElementById('myChart').getContext('2d');
@@ -111,7 +148,7 @@ function drawLineGraphOfChanceOfRainForNext7Days(forecastedData) {
 
         // The data for our dataset
         data: {
-            labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+            labels: xAxisLabels,
             datasets: [{
                 label: 'Chance of rain for next 7 days',
                 fill: false,
@@ -142,7 +179,7 @@ function handleError() {
 
 function printDatas(response) {
     try {
-        console.log("Debug log to print response " + response);
+        console.log(response);
         document.getElementById("showChart").style.display = "block";
         obtainCurrentTime(response.current.sunrise, true, false);
         obtainCurrentTime(response.current.sunset, false, true);
@@ -162,6 +199,7 @@ function printDatas(response) {
         document.getElementById("weatherForecast").style.visibility = "visible";
         document.getElementById("atmosphericPressure").innerHTML = response.current.pressure + " hPa";
         convertKelvinToCelsius(response.current.dew_point, "dewPoint");
+        convertMetreToKilometre(response.current.visibility, "visibleDistance");
     } catch (e) {
         handleError();
     }
