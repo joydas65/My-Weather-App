@@ -2,6 +2,7 @@ var sunriseTime;
 var sunsetTime;
 
 var windDirections = [];
+var xAxisLabels = [];
 
 var monthToDigitsMap = {};
 
@@ -119,14 +120,10 @@ function obtainWindDirection(windDegree) {
     document.getElementById("windDirection").innerHTML = windDirections[windDegree];
 }
 
-function drawLineGraphOfChanceOfRainForNext7Days(forecastedData) {
+function populateXAxisLabels() {
     var todayDate = new Date()
     var currentMonth = todayDate.getMonth()
     var currentDay = todayDate.getDate()
-    var chanceOfRainForNext7Days = [];
-
-    //fill up the x-axis labels for rain forecasts
-    var xAxisLabels = []
 
     xAxisLabels.push(monthToDigitsMap[currentMonth] + " " + currentDay)
 
@@ -136,13 +133,17 @@ function drawLineGraphOfChanceOfRainForNext7Days(forecastedData) {
 
         xAxisLabels.push(monthToDigitsMap[new Date(todayDate).getMonth()] + " " + new Date(todayDate).getDate())
     }
+}
+
+function drawLineGraphOfChanceOfRainForNext7Days(forecastedData) {
+    var chanceOfRainForNext7Days = [];
 
     console.log(xAxisLabels)
 
     for (var i = 0; i < 8; i++) {
         chanceOfRainForNext7Days.push(Math.floor((forecastedData[i].pop) * 100));
     }
-    var ctx = document.getElementById('myChart').getContext('2d');
+    var ctx = document.getElementById('myRainChart').getContext('2d');
     var chart = new Chart(ctx, {
         type: 'line',
 
@@ -150,11 +151,44 @@ function drawLineGraphOfChanceOfRainForNext7Days(forecastedData) {
         data: {
             labels: xAxisLabels,
             datasets: [{
-                label: 'Chance of rain for next 7 days',
+                label: 'Rain %',
                 fill: false,
-                backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgb(0, 191, 255)',
+                borderColor: 'rgb(0, 191, 255)',
                 data: chanceOfRainForNext7Days
+            }]
+        },
+
+        // Configuration options go here
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+function drawLineGraphOfTemperatureForNext7Days(forecastedData) {
+
+    var temperatureForeCastForNext7Days = [];
+
+    for (var i = 0; i < 8; i++) {
+        temperatureForeCastForNext7Days.push(Math.floor(forecastedData[i].temp.max - 273.15))
+    }
+
+    var ctx = document.getElementById('myTemperatureChart').getContext('2d');
+
+    var chart = new Chart(ctx, {
+        type: 'line',
+
+        // The data for our dataset
+        data: {
+            labels: xAxisLabels,
+            datasets: [{
+                label: "Temperature in °C",
+                backgroundColor: 'rgb(255, 99, 132)',
+                borderColor: 'rgb(255, 99, 132)',
+                data: temperatureForeCastForNext7Days,
+                fill: false
             }]
         },
 
@@ -180,7 +214,9 @@ function handleError() {
 function printDatas(response) {
     try {
         console.log(response);
-        document.getElementById("showChart").style.display = "block";
+        populateXAxisLabels();
+        document.getElementById("showRainChart").style.display = "block";
+        document.getElementById("showTemperatureChart").style.display = "block";
         obtainCurrentTime(response.current.sunrise, true, false);
         obtainCurrentTime(response.current.sunset, false, true);
         obtainCurrentTime(undefined, false, false);
@@ -196,7 +232,9 @@ function printDatas(response) {
         document.getElementById("showHumidity").innerHTML = response.current.humidity + " %";
         convertKelvinToCelsius(response.current.feels_like, "feelsLike");
         drawLineGraphOfChanceOfRainForNext7Days(response.daily);
-        document.getElementById("weatherForecast").style.visibility = "visible";
+        document.getElementById("rainForecast").style.visibility = "visible";
+        drawLineGraphOfTemperatureForNext7Days(response.daily)
+        document.getElementById("temperatureForecast").style.visibility = "visible";
         document.getElementById("atmosphericPressure").innerHTML = response.current.pressure + " hPa";
         convertKelvinToCelsius(response.current.dew_point, "dewPoint");
         convertMetreToKilometre(response.current.visibility, "visibleDistance");
