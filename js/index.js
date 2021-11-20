@@ -142,6 +142,7 @@ function handleError() {
 
 function printDatas(response) {
     try {
+        console.log("Debug log to print response " + response);
         document.getElementById("showChart").style.display = "block";
         obtainCurrentTime(response.current.sunrise, true, false);
         obtainCurrentTime(response.current.sunset, false, true);
