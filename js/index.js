@@ -159,7 +159,7 @@ function success(position) {
     var request = new XMLHttpRequest();
 
     // Open a new connection, using the GET request on the URL endpoint
-    request.open('GET', 'https://api.openweathermap.org/data/2.5/onecall?lat=' + latitude + '&lon=' + longitude + '&appid=', true);
+    request.open('GET', 'https://api.openweathermap.org/data/2.5/onecall?lat=' + latitude + '&lon=' + longitude + '&appid=caea05c347ae37456e527d4f89f0243d', true);
 
     request.onload = function() {
         // Begin accessing JSON data here
