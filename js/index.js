@@ -145,6 +145,7 @@ function printDatas(response) {
         convertKelvinToCelsius(response.current.feels_like, "feelsLike");
         drawLineGraphOfChanceOfRainForNext7Days(response.daily);
         document.getElementById("weatherForecast").style.visibility = "visible";
+        document.getElementById("atmosphericPressure").innerHTML = response.current.pressure + " hPa";
     } catch (e) {
         document.getElementById("loading-image").style.visibility = "hidden";
         launch_toast();

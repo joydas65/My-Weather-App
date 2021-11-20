@@ -51,6 +51,10 @@ button {
     z-index: 100;
 }
 
+.marginRightTwoPercent {
+    margin-right: 2% !important;
+}
+
 a.pull-right {
     float: right;
     color: #fff;
