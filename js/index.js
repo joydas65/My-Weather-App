@@ -160,6 +160,7 @@ function printDatas(response) {
         drawLineGraphOfChanceOfRainForNext7Days(response.daily);
         document.getElementById("weatherForecast").style.visibility = "visible";
         document.getElementById("atmosphericPressure").innerHTML = response.current.pressure + " hPa";
+        convertKelvinToCelsius(response.current.dew_point, "dewPoint");
     } catch (e) {
         handleError();
     }
