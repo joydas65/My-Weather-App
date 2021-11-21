@@ -172,7 +172,7 @@ function drawLineGraphOfTemperatureForNext7Days(forecastedData) {
     var temperatureForeCastForNext7Days = [];
 
     for (var i = 0; i < 8; i++) {
-        temperatureForeCastForNext7Days.push(Math.floor(forecastedData[i].temp.max - 273.15))
+        temperatureForeCastForNext7Days.push((forecastedData[i].temp.max - 273.15).toFixed(2))
     }
 
     var ctx = document.getElementById('myTemperatureChart').getContext('2d');
