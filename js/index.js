@@ -228,43 +228,78 @@ function drawLineGraphOfTemperatureForNext7Days(forecastedData) {
     });
 }
 
-function populateSunMoonTimings(forecastedData) {
-    var tableHeader = document.getElementsByTagName("thead")[0]
-    var tableRow = document.createElement("tr")
+function populateTimings(parentElement, tableRow, tableRowData, forecastedData, planetEvent, rowNumber) {
+    parentElement.appendChild(tableRow)
 
-    tableHeader.appendChild(tableRow)
-    
+    var tableRowData;
+
     for (var i = 0; i <= 7; i++) {
-        var tableHeaderData = document.createElement("th")
 
-        tableHeaderData.classList.add("paddingFivePixels")
-        tableHeaderData.classList.add("widthEightPoint33Percent")
-
-        if (i == 0) {
-            tableHeaderData.textContent = ''
+        if (rowNumber === 0) {
+            tableRowData = document.createElement("th")
         } else {
-            tableHeaderData.textContent = xAxisLabels[i-1]
+            tableRowData = document.createElement("td")
         }
 
-        tableRow.appendChild(tableHeaderData)
-        //fetchCurrentTime(forecastedData[i].sunrise)
+        tableRowData.classList.add("paddingFivePixels")
+        tableRowData.classList.add("widthEightPoint33Percent")
+
+        if (i === 0) {
+            tableRowData.textContent = planetEvent
+        } else {
+            if (rowNumber === 0) {
+                tableRowData.textContent = xAxisLabels[i-1]
+            } else {
+                tableRowData.textContent = fetchCurrentTime(forecastedData[i-1][planetEvent])
+            }
+        }
+
+        tableRow.appendChild(tableRowData)
     }
 
-    var lastTableHeader = document.createElement("th")
+    var lastTableData;
 
-    lastTableHeader.classList.add("paddingFivePixels")
-    lastTableHeader.classList.add("widthEightPoint33Percent")
+    if (rowNumber === 0) {
+        lastTableData = document.createElement("th")
+        lastTableData.textContent = xAxisLabels[7]
+    } else {
+        lastTableData = document.createElement("td")
+        lastTableData.textContent = fetchCurrentTime(forecastedData[7][planetEvent])
+    }
 
-    lastTableHeader.textContent = xAxisLabels[7]
+    lastTableData.classList.add("paddingFivePixels")
+    lastTableData.classList.add("widthEightPoint33Percent")
 
-    tableRow.appendChild(lastTableHeader)
+    tableRow.appendChild(lastTableData)
+}
 
-    console.log(tableHeader)
+function populateSunMoonTimings(forecastedData) {
+
+    for (var i = 0; i <= 4; i++) {
+
+        if (i === 0) {
+            populateTimings(document.getElementsByTagName("thead")[0], document.createElement("tr"), 
+                document.createElement("th"), forecastedData, '', i)
+        } else if (i === 1) {
+            populateTimings(document.getElementsByTagName("tbody")[0], document.createElement("tr"), 
+                document.createElement("td"), forecastedData, 'sunrise', i)
+        } else if (i === 2) {
+            populateTimings(document.getElementsByTagName("tbody")[0], document.createElement("tr"), 
+                document.createElement("td"), forecastedData, 'sunset', i)
+        } else if (i === 3) {
+            populateTimings(document.getElementsByTagName("tbody")[0], document.createElement("tr"), 
+                document.createElement("td"), forecastedData, 'moonrise', i)
+        } else {
+            populateTimings(document.getElementsByTagName("tbody")[0], document.createElement("tr"), 
+                document.createElement("td"), forecastedData, 'moonset', i)    
+        }
+    }
 }
 
 function hideSpinnerAndWeatherDetails() {
     document.getElementById("loading-image").style.visibility = "hidden";
     document.getElementById("weatherContent").style.display = "none";
+    document.getElementById("weatherForeCastData").style.display = "none";
 }
  
 function handleError() {
@@ -315,7 +350,7 @@ function success(position) {
         var request = new XMLHttpRequest();
 
         // Open a new connection, using the GET request on the URL endpoint
-        request.open('GET', 'https://api.openweathermap.org/data/2.5/onecall?lat=' + latitude + '&lon=' + longitude + '&appid=caea05c347ae37456e527d4f89f0243d', true);
+        request.open('GET', 'https://api.openweathermap.org/data/2.5/onecall?lat=' + latitude + '&lon=' + longitude + '&appid=5108c6c56e0a295f402830673068d1b0', true);
 
         request.onload = function() {
             // Begin accessing JSON data here
