@@ -24,7 +24,7 @@
     <nav class="navbar navbar-inverse">
         <div class="container-fluid">
             <div class="navbar-header">
-                <a class="navbar-brand" style="font-size:150%" href="#">My Geolocation App</a>
+                <a class="navbar-brand" style="font-size:150%" href="#">My Weather App</a>
             </div>
             <ul class="nav navbar-nav">
                 <li class="active"><a href="#">Home</a></li>
@@ -88,7 +88,7 @@
     <hr>
     <div class="container-fluid">
         <div class="row">
-            <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                 <h1 id="rainForecast" style="margin-left: 5.4%; font-size: 145%; visibility: hidden">Rain Forecasts for next 7 days</h1>
                 <div id="showRainChart" class="table-responsive" style="display: none; position: relative; height:50vh; width:95vw">
                     <canvas id="myRainChart"></canvas>
@@ -96,11 +96,20 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                 <h1 id="temperatureForecast" style="margin-left: 5.4%; font-size: 145%; visibility: hidden">Temperature Forecasts for next 7 days</h1>
                 <div id="showTemperatureChart" class="table-responsive" style="display: none; position: relative; height:50vh; width:95vw">
                     <canvas id="myTemperatureChart"></canvas>
                 </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <h1 id="sunMoonTimings" style="margin-left: 5.4%; font-size: 145%; visibility: hidden">Sunrise, Sunset, Moonrise, Moonset Timings for next 7 days</h1>
+                <table class="table-bordered table-striped" id="tableTimingsForSunAndMoon" style="margin-left: 5%;">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
     </div>
