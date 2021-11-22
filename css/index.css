@@ -201,6 +201,14 @@ span i {
     font-weight: 600;
 }
 
+.paddingFivePixels {
+    padding: 5px;
+}
+
+.widthEightPoint33Percent {
+    width: 8.33%;
+}
+
 @media screen and (max-width: 768px) {
     h4 {
         font-size: 90%;

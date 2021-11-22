@@ -30,32 +30,49 @@ function launch_toast() {
     }, 2000);
 }
 
-function obtainCurrentTime(unix_timestamp, isItSunrise, isItSunset) {
+function fetchCurrentTime(unix_timestamp) {
     var date;
+
     if (unix_timestamp === null || unix_timestamp === undefined) {
         date = new Date();
     } else {
         date = new Date(unix_timestamp * 1000);
     }
+
     var hour = date.getHours();
     var min = date.getMinutes();
     var sec = date.getSeconds();
+
     hour = updateTime(hour);
     min = updateTime(min);
     sec = updateTime(sec);
+
     var time = hour + ":" + min + ":" + sec;
+
     if (hour >= 12) {
         time += " PM";
     } else {
         time += " AM";
     }
+
+    return time
+}
+
+function obtainCurrentTime(unix_timestamp, isItSunrise, isItSunset) {
+
+    var currTime = fetchCurrentTime(unix_timestamp)
+
+    if (unix_timestamp === null || unix_timestamp === undefined) {
+        date = new Date();
+    }
+    
     if (isItSunrise === false && isItSunset === false) {
-        document.getElementById("currentTime").innerText = time; /* adding time to the div */
+        document.getElementById("currentTime").innerText = currTime; /* adding time to the div */
         document.getElementById("showDate").innerHTML = date.getDate() + "/" + String(Number(date.getMonth() + 1)) + "/" + date.getFullYear();
     } else if (isItSunrise === true && isItSunset === false) {
-        sunriseTime = time;
+        sunriseTime = currTime;
     } else if (isItSunset === true && isItSunrise === false) {
-        sunsetTime = time;
+        sunsetTime = currTime;
     }
 
     if (unix_timestamp === null || unix_timestamp === undefined) {
@@ -169,10 +186,12 @@ function drawLineGraphOfChanceOfRainForNext7Days(forecastedData) {
 
 function drawLineGraphOfTemperatureForNext7Days(forecastedData) {
 
-    var temperatureForeCastForNext7Days = [];
+    var maxTemperatureForeCastForNext7Days = [];
+    var minTemperatureForeCastForNext7Days = [];
 
     for (var i = 0; i < 8; i++) {
-        temperatureForeCastForNext7Days.push((forecastedData[i].temp.max - 273.15).toFixed(2))
+        maxTemperatureForeCastForNext7Days.push((forecastedData[i].temp.max - 273.15).toFixed(2))
+        minTemperatureForeCastForNext7Days.push((forecastedData[i].temp.min - 273.15).toFixed(2))
     }
 
     var ctx = document.getElementById('myTemperatureChart').getContext('2d');
@@ -183,13 +202,22 @@ function drawLineGraphOfTemperatureForNext7Days(forecastedData) {
         // The data for our dataset
         data: {
             labels: xAxisLabels,
-            datasets: [{
-                label: "Temperature in °C",
-                backgroundColor: 'rgb(255, 99, 132)',
-                borderColor: 'rgb(255, 99, 132)',
-                data: temperatureForeCastForNext7Days,
-                fill: false
-            }]
+            datasets: [
+                {
+                    label: "Max Temperature in °C",
+                    backgroundColor: 'rgb(128, 0, 0)',
+                    borderColor: 'rgb(128, 0, 0)',
+                    data: maxTemperatureForeCastForNext7Days,
+                    fill: false
+                },
+                {
+                    label: "Min Temperature in °C",
+                    backgroundColor: 'rgb(255, 68, 51)',
+                    borderColor: 'rgb(255, 68, 51)',
+                    data: minTemperatureForeCastForNext7Days,
+                    fill: false
+                }
+            ]
         },
 
         // Configuration options go here
@@ -198,6 +226,40 @@ function drawLineGraphOfTemperatureForNext7Days(forecastedData) {
             maintainAspectRatio: false
         }
     });
+}
+
+function populateSunMoonTimings(forecastedData) {
+    var tableHeader = document.getElementsByTagName("thead")[0]
+    var tableRow = document.createElement("tr")
+
+    tableHeader.appendChild(tableRow)
+    
+    for (var i = 0; i <= 7; i++) {
+        var tableHeaderData = document.createElement("th")
+
+        tableHeaderData.classList.add("paddingFivePixels")
+        tableHeaderData.classList.add("widthEightPoint33Percent")
+
+        if (i == 0) {
+            tableHeaderData.textContent = ''
+        } else {
+            tableHeaderData.textContent = xAxisLabels[i-1]
+        }
+
+        tableRow.appendChild(tableHeaderData)
+        //fetchCurrentTime(forecastedData[i].sunrise)
+    }
+
+    var lastTableHeader = document.createElement("th")
+
+    lastTableHeader.classList.add("paddingFivePixels")
+    lastTableHeader.classList.add("widthEightPoint33Percent")
+
+    lastTableHeader.textContent = xAxisLabels[7]
+
+    tableRow.appendChild(lastTableHeader)
+
+    console.log(tableHeader)
 }
 
 function hideSpinnerAndWeatherDetails() {
@@ -235,6 +297,8 @@ function printDatas(response) {
         document.getElementById("rainForecast").style.visibility = "visible";
         drawLineGraphOfTemperatureForNext7Days(response.daily)
         document.getElementById("temperatureForecast").style.visibility = "visible";
+        document.getElementById("sunMoonTimings").style.visibility = "visible";
+        populateSunMoonTimings(response.daily)
         document.getElementById("atmosphericPressure").innerHTML = response.current.pressure + " hPa";
         convertKelvinToCelsius(response.current.dew_point, "dewPoint");
         convertMetreToKilometre(response.current.visibility, "visibleDistance");
