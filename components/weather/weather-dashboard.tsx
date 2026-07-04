@@ -4,6 +4,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Cloud,
+  CloudRain,
   Clock3,
   Droplets,
   Eye,
@@ -18,7 +19,6 @@ import {
   Thermometer,
   Wind
 } from "lucide-react";
-import Image from "next/image";
 import { FormEvent, useRef, useState } from "react";
 import { DailyForecast } from "@/components/weather/daily-forecast";
 import { ForecastChart } from "@/components/weather/forecast-chart";
@@ -482,13 +482,9 @@ function WeatherReportSections({
                   Next 8 days
                 </h2>
               </div>
-              <Image
-                alt=""
-                className="h-8 w-8 opacity-70"
-                height={32}
-                src="/barometer.png"
-                width={32}
-              />
+              <span className="rounded-lg bg-cyan-50 p-2 text-cyan-700 ring-1 ring-cyan-100">
+                <CloudRain aria-hidden="true" className="h-5 w-5" />
+              </span>
             </div>
             <ForecastChart daily={weather.daily} mode="precipitation" />
           </article>

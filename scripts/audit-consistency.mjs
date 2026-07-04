@@ -14,6 +14,10 @@ const forecastChartTests = await readFile(
   join(root, "tests", "forecast-chart.test.tsx"),
   "utf8"
 );
+const uxStructureTests = await readFile(
+  join(root, "tests", "ux-structure.test.ts"),
+  "utf8"
+);
 const astronomyTests = await readFile(join(root, "tests", "astronomy.test.ts"), "utf8");
 const weatherComponentTests = await readFile(
   join(root, "tests", "weather-components.test.tsx"),
@@ -62,12 +66,22 @@ const requiredScripts = [
   "audit:consistency",
   "check"
 ];
-const requiredPublicAssets = ["barometer.png", "spinner.gif", "loading.gif"];
 const retiredLegacyFiles = [
   "index.html",
   "international.html",
   "css/index.css",
   "js/index.js"
+];
+const retiredProductArtifacts = [
+  "spinner.gif",
+  "loading.gif",
+  "walmart-icon.png",
+  "noun-barometer-78613.png",
+  "public/spinner.gif",
+  "public/loading.gif",
+  "public/walmart-icon.png",
+  "public/barometer.png",
+  "lib/weather/sample-data.ts"
 ];
 
 const failures = [];
@@ -92,6 +106,13 @@ if (
   !scaffoldAudit.includes("empty`, `loading`, `ready`, `geo-blocked`, `api-error`, and `no-results`")
 ) {
   failures.push("Open-Meteo, no-key runtime, moon-data, and UI state strategy are not documented consistently.");
+}
+
+if (
+  !readme.includes("Legacy loading GIFs, unrelated brand artwork, bitmap chart decorations, and demo weather data are retired") ||
+  !scaffoldAudit.includes("legacy loading GIFs, unrelated brand artwork, bitmap chart decorations, and demo weather data remain absent")
+) {
+  failures.push("Retired loading assets, unrelated artwork, bitmap chart decorations, and demo data are not documented consistently.");
 }
 
 if (
@@ -139,8 +160,8 @@ for (const errorCode of weatherErrorCodes) {
   }
 }
 
-if (homePage.includes("sampleWeather")) {
-  failures.push("app/page.tsx should start with the empty dashboard state, not sample weather.");
+if (homePage.includes("sampleWeather") || weatherDashboard.includes("sampleWeather")) {
+  failures.push("The app should start with the empty dashboard state, not sample weather.");
 }
 
 const requiredTypeNames = [
@@ -201,6 +222,45 @@ if (
   failures.push("The dashboard must expose last-updated status, typed state panels, notices, and dynamic condition icons.");
 }
 
+if (
+  !weatherDashboard.includes('aria-live="polite"') ||
+  !weatherDashboard.includes('role="status"') ||
+  !weatherDashboard.includes('role={tone === "error" ? "alert" : "status"}') ||
+  !weatherDashboard.includes("LoaderCircle") ||
+  !weatherDashboard.includes("weather-loader-bar")
+) {
+  failures.push("Loading, notices, and recovery states must use accessible React components instead of legacy spinner/toast assets.");
+}
+
+if (
+  weatherDashboard.includes("next/image") ||
+  weatherDashboard.includes("/barometer.png") ||
+  weatherDashboard.includes("spinner.gif") ||
+  weatherDashboard.includes("loading.gif") ||
+  weatherDashboard.includes("walmart")
+) {
+  failures.push("The dashboard must not use retired bitmap, spinner, loading, or unrelated brand assets.");
+}
+
+if (
+  !weatherDashboard.includes("flex-col") ||
+  !weatherDashboard.includes("sm:flex-row") ||
+  !weatherDashboard.includes("lg:flex-row") ||
+  !weatherDashboard.includes("lg:grid-cols") ||
+  !weatherDashboard.includes("xl:grid-cols")
+) {
+  failures.push("The dashboard must keep mobile-first responsive layout classes.");
+}
+
+if (
+  !sunMoonTable.includes("md:hidden") ||
+  !sunMoonTable.includes("md:block") ||
+  sunMoonTable.includes("min-w-[900px]") ||
+  sunMoonTable.includes("overflow-x-auto")
+) {
+  failures.push("The sun/moon timing UI must render mobile cards and a desktop table without wide mobile overflow.");
+}
+
 const dashboardStates = [
   "empty",
   "loading",
@@ -235,15 +295,15 @@ if (!readme.includes("vercel.json") || !scaffoldAudit.includes("Vercel deploymen
   failures.push("Vercel deployment configuration is not documented consistently.");
 }
 
-for (const asset of requiredPublicAssets) {
-  if (!existsSync(join(root, "public", asset))) {
-    failures.push(`public/${asset} is missing.`);
-  }
-}
-
 for (const legacyFile of retiredLegacyFiles) {
   if (existsSync(join(root, legacyFile))) {
     failures.push(`${legacyFile} should remain retired from the Next.js scaffold.`);
+  }
+}
+
+for (const artifact of retiredProductArtifacts) {
+  if (existsSync(join(root, artifact))) {
+    failures.push(`${artifact} should remain retired from the weather product UI.`);
   }
 }
 
@@ -336,6 +396,19 @@ const componentCoverage = [
 for (const coveredName of componentCoverage) {
   if (!weatherComponentTests.includes(coveredName)) {
     failures.push(`${coveredName} is missing component behavior test coverage.`);
+  }
+}
+
+const uxStructureCoverage = [
+  "retired legacy assets",
+  "accessible loading",
+  "mobile-first dashboard",
+  "mobile-friendly sun and moon"
+];
+
+for (const coveredName of uxStructureCoverage) {
+  if (!uxStructureTests.includes(coveredName)) {
+    failures.push(`${coveredName} is missing UX structure test coverage.`);
   }
 }
 
