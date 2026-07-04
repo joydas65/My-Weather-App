@@ -1,1 +1,10 @@
+.DS_Store
 .env
+.env.local
+.env.*.local
+.next/
+.pnpm-store/
+coverage/
+node_modules/
+out/
+.vercel
