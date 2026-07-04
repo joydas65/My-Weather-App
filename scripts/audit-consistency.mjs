@@ -247,9 +247,12 @@ if (
   !weatherDashboard.includes("sm:flex-row") ||
   !weatherDashboard.includes("lg:flex-row") ||
   !weatherDashboard.includes("lg:grid-cols") ||
-  !weatherDashboard.includes("xl:grid-cols")
+  !weatherDashboard.includes("xl:grid-cols") ||
+  !weatherDashboard.includes("grid min-w-0 gap-4 xl:grid-cols-2") ||
+  !forecastChart.includes("min-w-0 space-y-3") ||
+  !forecastChart.includes("h-72 min-w-0 w-full")
 ) {
-  failures.push("The dashboard must keep mobile-first responsive layout classes.");
+  failures.push("The dashboard and forecast charts must keep mobile-first responsive layout classes that prevent narrow-phone overflow.");
 }
 
 if (
@@ -403,6 +406,7 @@ const uxStructureCoverage = [
   "retired legacy assets",
   "accessible loading",
   "mobile-first dashboard",
+  "forecast chart cards",
   "mobile-friendly sun and moon"
 ];
 

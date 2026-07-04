@@ -85,7 +85,7 @@ export function ForecastChart({ daily, mode }: ForecastChartProps) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="min-w-0 space-y-3">
       <dl className="grid grid-cols-2 gap-2 text-xs sm:flex sm:flex-wrap">
         {model.summary.map((item) => (
           <div
@@ -100,7 +100,7 @@ export function ForecastChart({ daily, mode }: ForecastChartProps) {
         ))}
       </dl>
 
-      <div className="relative h-72 w-full overflow-hidden rounded-lg bg-gradient-to-b from-white to-slate-50 p-3 ring-1 ring-slate-100">
+      <div className="relative h-72 min-w-0 w-full overflow-hidden rounded-lg bg-gradient-to-b from-white to-slate-50 p-2 ring-1 ring-slate-100 sm:p-3">
         <div className="pointer-events-none absolute inset-x-4 top-4 h-px bg-gradient-to-r from-cyan-200/0 via-cyan-200 to-rose-200/0" />
         <ForecastChartErrorBoundary
           fallback={

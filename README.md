@@ -75,7 +75,7 @@ The first screen starts in an empty location state instead of showing demo weath
 
 Forecast charts use Chart.js through `react-chartjs-2` for precipitation probability and min/max temperature trends. The chart surface includes responsive labels, styled tooltips, summary chips, chart empty/error handling, and component behavior tests for ready, empty, and invalid-data states.
 
-The UI is mobile-first: the first screen exposes search and current-location actions immediately, loading and alert states use accessible React components, and the sun/moon timing view renders compact mobile cards before switching to a desktop table. Legacy loading GIFs, unrelated brand artwork, bitmap chart decorations, and demo weather data are retired.
+The UI is mobile-first: the first screen exposes search and current-location actions immediately, loading and alert states use accessible React components, forecast chart cards shrink safely on narrow phones, and the sun/moon timing view renders compact mobile cards before switching to a desktop table. Legacy loading GIFs, unrelated brand artwork, bitmap chart decorations, and demo weather data are retired.
 
 ## Project Structure
 

@@ -20,7 +20,7 @@ The dashboard starts without demo weather and asks the user to search or grant l
 
 Forecast charts use Chart.js through `react-chartjs-2` and must keep precipitation probability plus min/max temperature concepts. The chart components own responsive labels, styled tooltips, summary context, chart empty and error states, and renderable fallback UI when data is missing or invalid.
 
-The app uses a mobile-first product layout. Search and location actions are available on the first screen, loading and alert states use accessible React components, and sun/moon timing renders mobile cards before a desktop table. The audit expects legacy loading GIFs, unrelated brand artwork, bitmap chart decorations, and demo weather data remain absent.
+The app uses a mobile-first product layout. Search and location actions are available on the first screen, loading and alert states use accessible React components, forecast chart cards shrink safely on narrow phones, and sun/moon timing renders mobile cards before a desktop table. The audit expects legacy loading GIFs, unrelated brand artwork, bitmap chart decorations, and demo weather data remain absent.
 
 ## Audit Scope
 

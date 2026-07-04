@@ -473,8 +473,8 @@ function WeatherReportSections({
           </div>
         </section>
 
-        <section className="grid gap-4 xl:grid-cols-2">
-          <article className="rounded-lg border border-black/5 bg-white/85 p-5 shadow-sm shadow-slate-200/70">
+        <section className="grid min-w-0 gap-4 xl:grid-cols-2">
+          <article className="min-w-0 rounded-lg border border-black/5 bg-white/85 p-4 shadow-sm shadow-slate-200/70 sm:p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-medium text-slate-500">Rain forecast</p>
@@ -489,7 +489,7 @@ function WeatherReportSections({
             <ForecastChart daily={weather.daily} mode="precipitation" />
           </article>
 
-          <article className="rounded-lg border border-black/5 bg-white/85 p-5 shadow-sm shadow-slate-200/70">
+          <article className="min-w-0 rounded-lg border border-black/5 bg-white/85 p-4 shadow-sm shadow-slate-200/70 sm:p-5">
             <div className="mb-4">
               <p className="text-sm font-medium text-slate-500">
                 Temperature forecast

@@ -6,6 +6,7 @@ const root = process.cwd();
 const read = (path: string) => readFileSync(join(root, path), "utf8");
 
 const dashboard = read("components/weather/weather-dashboard.tsx");
+const forecastChart = read("components/weather/forecast-chart.tsx");
 const sunMoonTable = read("components/weather/sun-moon-table.tsx");
 
 describe("UX structure", () => {
@@ -49,6 +50,13 @@ describe("UX structure", () => {
     expect(dashboard).toContain("lg:flex-row");
     expect(dashboard).toContain("lg:grid-cols");
     expect(dashboard).toContain("xl:grid-cols");
+  });
+
+  it("keeps forecast chart cards shrinkable on narrow phones", () => {
+    expect(dashboard).toContain("grid min-w-0 gap-4 xl:grid-cols-2");
+    expect(dashboard).toContain("min-w-0 rounded-lg border");
+    expect(forecastChart).toContain("min-w-0 space-y-3");
+    expect(forecastChart).toContain("h-72 min-w-0 w-full");
   });
 
   it("renders mobile-friendly sun and moon cards before the desktop table", () => {
