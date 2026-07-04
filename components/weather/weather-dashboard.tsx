@@ -12,6 +12,7 @@ import {
   LocateFixed,
   LoaderCircle,
   MapPin,
+  Menu,
   RefreshCw,
   Search,
   Sunrise,
@@ -25,6 +26,7 @@ import { ForecastChart } from "@/components/weather/forecast-chart";
 import { MetricCard } from "@/components/weather/metric-card";
 import { SunMoonTable } from "@/components/weather/sun-moon-table";
 import { WeatherConditionIcon } from "@/components/weather/weather-condition-icon";
+import { WeatherMenuDrawer } from "@/components/weather/weather-menu";
 import {
   isWeatherApiFailure,
   type WeatherApiResponse,
@@ -90,9 +92,12 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
     initialWeather ?? null
   );
   const [query, setQuery] = useState("");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [lastRequest, setLastRequest] = useState<WeatherRetry | null>(null);
   const [viewState, setViewState] = useState<WeatherViewState>(
     initialWeather ? { status: "ready" } : { status: "empty" }
   );
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
   const noticeTimerRef = useRef<number | null>(null);
   const isLoading = viewState.status === "loading";
 
@@ -177,6 +182,7 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
       }
 
       setWeather(payload.weather);
+      setLastRequest({ endpoint, loading: state });
       setQuery("");
       showSettledNotice(successMessage(payload.weather), "success");
     } catch (error) {
@@ -279,6 +285,26 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
     );
   }
 
+  function closeMenu() {
+    setIsMenuOpen(false);
+    menuButtonRef.current?.focus();
+  }
+
+  function refreshWeather() {
+    if (!lastRequest || isLoading) {
+      return;
+    }
+
+    void loadWeather(
+      lastRequest.endpoint,
+      {
+        title: "Refreshing weather",
+        detail: "Updating the latest dashboard conditions and forecast."
+      },
+      (updatedWeather) => `Updated ${updatedWeather.current.locationName}`
+    );
+  }
+
   const location = weather
     ? [weather.current.locationName, weather.current.country]
         .filter(Boolean)
@@ -288,26 +314,52 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
   return (
     <main className="min-h-screen">
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-4 rounded-lg border border-black/5 bg-white/80 p-4 shadow-sm shadow-slate-200/70 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="min-w-0">
-            <p className="inline-flex items-center gap-2 text-sm font-medium text-slate-500">
-              <MapPin aria-hidden="true" className="h-4 w-4 text-emerald-600" />
-              {location}
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950 sm:text-4xl">
-              {weather ? weather.current.description : "Choose a location"}
-            </h1>
-            {weather ? (
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
-                <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 ring-1 ring-slate-100">
-                  <Clock3 aria-hidden="true" className="h-3.5 w-3.5" />
-                  Updated {formatTime(weather.metadata.fetchedAt, weather.current.timezone)}
-                </span>
-                <span className="rounded-lg bg-slate-50 px-2.5 py-1 ring-1 ring-slate-100">
-                  {weather.metadata.provider}
-                </span>
-              </div>
-            ) : null}
+        <WeatherMenuDrawer
+          isLoading={isLoading}
+          isOpen={isMenuOpen}
+          onClose={closeMenu}
+          onRefresh={weather && lastRequest ? refreshWeather : undefined}
+          onUseLocation={handleUseLocation}
+          weather={weather}
+        />
+
+        <header
+          className="flex flex-col gap-4 rounded-lg border border-black/5 bg-white/80 p-4 shadow-sm shadow-slate-200/70 sm:p-5 lg:flex-row lg:items-center lg:justify-between"
+          id="weather-search-panel"
+        >
+          <div className="flex min-w-0 items-start gap-3 lg:flex-1">
+            <button
+              aria-controls="weather-menu-drawer"
+              aria-expanded={isMenuOpen}
+              aria-label="Open weather menu"
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-700 focus:outline-none focus:ring-4 focus:ring-cyan-100"
+              onClick={() => setIsMenuOpen(true)}
+              ref={menuButtonRef}
+              title="Open menu"
+              type="button"
+            >
+              <Menu aria-hidden="true" className="h-5 w-5" />
+            </button>
+            <div className="min-w-0">
+              <p className="inline-flex items-center gap-2 text-sm font-medium text-slate-500">
+                <MapPin aria-hidden="true" className="h-4 w-4 text-emerald-600" />
+                {location}
+              </p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950 sm:text-4xl">
+                {weather ? weather.current.description : "Choose a location"}
+              </h1>
+              {weather ? (
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 ring-1 ring-slate-100">
+                    <Clock3 aria-hidden="true" className="h-3.5 w-3.5" />
+                    Updated {formatTime(weather.metadata.fetchedAt, weather.current.timezone)}
+                  </span>
+                  <span className="rounded-lg bg-slate-50 px-2.5 py-1 ring-1 ring-slate-100">
+                    {weather.metadata.provider}
+                  </span>
+                </div>
+              ) : null}
+            </div>
           </div>
           <form
             className="flex w-full flex-col gap-2 sm:flex-row lg:max-w-xl"
@@ -388,7 +440,8 @@ function WeatherReportSections({
     <>
       <section
         aria-busy={isLoading}
-        className="grid gap-4 transition-opacity lg:grid-cols-[1.1fr_1.9fr]"
+        className="grid scroll-mt-4 gap-4 transition-opacity lg:grid-cols-[1.1fr_1.9fr]"
+        id="current-weather"
       >
           <article className="rounded-lg border border-black/5 bg-slate-950 p-5 text-white shadow-sm shadow-slate-300/80">
             <div className="flex items-start justify-between gap-4">
@@ -473,7 +526,7 @@ function WeatherReportSections({
           </div>
         </section>
 
-        <section className="grid min-w-0 gap-4 xl:grid-cols-2">
+        <section className="grid min-w-0 gap-4 xl:grid-cols-2 scroll-mt-4" id="forecast-charts">
           <article className="min-w-0 rounded-lg border border-black/5 bg-white/85 p-4 shadow-sm shadow-slate-200/70 sm:p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
@@ -502,7 +555,7 @@ function WeatherReportSections({
           </article>
         </section>
 
-        <section>
+        <section className="scroll-mt-4" id="daily-outlook">
           <div className="mb-4">
             <p className="text-sm font-medium text-slate-500">Daily outlook</p>
             <h2 className="text-xl font-semibold tracking-normal text-slate-950">
@@ -512,7 +565,7 @@ function WeatherReportSections({
           <DailyForecast daily={weather.daily} />
         </section>
 
-        <section>
+        <section className="scroll-mt-4" id="sun-moon">
           <div className="mb-4">
             <p className="text-sm font-medium text-slate-500">Sun and moon</p>
             <h2 className="text-xl font-semibold tracking-normal text-slate-950">

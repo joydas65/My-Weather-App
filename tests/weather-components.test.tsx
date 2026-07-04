@@ -6,12 +6,43 @@ import {
   WeatherStatePanel,
   WEATHER_VIEW_STATES
 } from "@/components/weather/weather-dashboard";
+import { WeatherMenuDrawer } from "@/components/weather/weather-menu";
 import { SunMoonTable } from "@/components/weather/sun-moon-table";
 import {
   getWeatherConditionPresentation,
   WeatherConditionIcon
 } from "@/components/weather/weather-condition-icon";
-import type { DailyForecast } from "@/lib/weather/types";
+import type { DailyForecast, WeatherReport } from "@/lib/weather/types";
+
+const menuWeather: WeatherReport = {
+  current: {
+    locationName: "London",
+    country: "GB",
+    observedAt: "2026-07-04T12:00:00Z",
+    timezone: "Europe/London",
+    condition: "clouds",
+    description: "Partly cloudy",
+    icon: "partly-cloudy-day",
+    isDay: true,
+    temperatureC: 21,
+    feelsLikeC: 20,
+    humidity: 62,
+    pressureHpa: 1014,
+    dewPointC: 12,
+    visibilityMeters: 10000,
+    cloudCover: 42,
+    windSpeedMs: 5.8,
+    windDegree: 270,
+    sunrise: "2026-07-04T04:48:00Z",
+    sunset: "2026-07-04T20:22:00Z"
+  },
+  daily: [],
+  metadata: {
+    attribution: "Weather data by Open-Meteo",
+    fetchedAt: "2026-07-04T12:05:00Z",
+    provider: "Open-Meteo"
+  }
+};
 
 describe("weather component behavior", () => {
   it("keeps the expected dashboard view states explicit", () => {
@@ -28,9 +59,36 @@ describe("weather component behavior", () => {
   it("starts with a recoverable empty location state", () => {
     const markup = renderToStaticMarkup(<WeatherDashboard />);
 
+    expect(markup).toContain('aria-label="Open weather menu"');
+    expect(markup).toContain('aria-controls="weather-menu-drawer"');
     expect(markup).toContain("No location selected");
     expect(markup).toContain("Choose a location");
     expect(markup).toContain("Search a city or use your current location");
+  });
+
+  it("renders the hamburger menu as an accessible dashboard drawer", () => {
+    const markup = renderToStaticMarkup(
+      <WeatherMenuDrawer
+        isLoading={false}
+        isOpen
+        onClose={() => undefined}
+        onRefresh={() => undefined}
+        onUseLocation={() => undefined}
+        weather={menuWeather}
+      />
+    );
+
+    expect(markup).toContain('role="dialog"');
+    expect(markup).toContain('aria-modal="true"');
+    expect(markup).toContain("Search location");
+    expect(markup).toContain("Use current location");
+    expect(markup).toContain("Current weather");
+    expect(markup).toContain("Forecast charts");
+    expect(markup).toContain("Daily outlook");
+    expect(markup).toContain("Sun and moon");
+    expect(markup).toContain("Weather data");
+    expect(markup).toContain("Refresh weather");
+    expect(markup).toContain("Open-Meteo");
   });
 
   it("renders loading, blocked, no-results, and retryable API states", () => {

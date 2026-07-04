@@ -46,6 +46,10 @@ const weatherDashboard = await readFile(
   join(root, "components", "weather", "weather-dashboard.tsx"),
   "utf8"
 );
+const weatherMenu = await readFile(
+  join(root, "components", "weather", "weather-menu.tsx"),
+  "utf8"
+);
 const homePage = await readFile(join(root, "app", "page.tsx"), "utf8");
 const conditionIcon = await readFile(
   join(root, "components", "weather", "weather-condition-icon.tsx"),
@@ -122,6 +126,15 @@ if (
   !scaffoldAudit.includes("ForecastChart component behavior")
 ) {
   failures.push("Chart.js resilience, empty/error handling, and component behavior expectations are not documented consistently.");
+}
+
+if (
+  !readme.includes("hamburger menu") ||
+  !readme.includes("keyboard-accessible drawer") ||
+  !scaffoldAudit.includes("hamburger menu") ||
+  !scaffoldAudit.includes("keyboard-accessible drawer")
+) {
+  failures.push("The hamburger menu foundation is not documented consistently.");
 }
 
 if (readme.includes("OPENWEATHER_API_KEY") || scaffoldAudit.includes("OPENWEATHER_API_KEY")) {
@@ -217,9 +230,29 @@ if (
   !weatherDashboard.includes("EmptyStatePanel") ||
   !weatherDashboard.includes("RecoveryPanel") ||
   !weatherDashboard.includes("NoticePanel") ||
-  !weatherDashboard.includes("WeatherConditionIcon")
+  !weatherDashboard.includes("WeatherConditionIcon") ||
+  !weatherDashboard.includes("WeatherMenuDrawer") ||
+  !weatherDashboard.includes("lastRequest") ||
+  !weatherDashboard.includes("refreshWeather")
 ) {
-  failures.push("The dashboard must expose last-updated status, typed state panels, notices, and dynamic condition icons.");
+  failures.push("The dashboard must expose last-updated status, typed state panels, notices, dynamic condition icons, and menu refresh wiring.");
+}
+
+if (
+  !weatherDashboard.includes('aria-label="Open weather menu"') ||
+  !weatherDashboard.includes('aria-controls="weather-menu-drawer"') ||
+  !weatherDashboard.includes('aria-expanded={isMenuOpen}') ||
+  !weatherMenu.includes('role="dialog"') ||
+  !weatherMenu.includes('aria-modal="true"') ||
+  !weatherMenu.includes('event.key === "Escape"') ||
+  !weatherMenu.includes("Search location") ||
+  !weatherMenu.includes("Use current location") ||
+  !weatherMenu.includes("Refresh weather") ||
+  !weatherMenu.includes("#forecast-charts") ||
+  !weatherMenu.includes("#daily-outlook") ||
+  !weatherMenu.includes("#sun-moon")
+) {
+  failures.push("The hamburger menu must stay accessible, keyboard-closeable, and useful for dashboard navigation, location, and refresh actions.");
 }
 
 if (
@@ -393,7 +426,8 @@ for (const coveredName of astronomyCoverage) {
 const componentCoverage = [
   "WeatherConditionIcon",
   "getWeatherConditionPresentation",
-  "SunMoonTable"
+  "SunMoonTable",
+  "WeatherMenuDrawer"
 ];
 
 for (const coveredName of componentCoverage) {
@@ -406,6 +440,7 @@ const uxStructureCoverage = [
   "retired legacy assets",
   "accessible loading",
   "mobile-first dashboard",
+  "hamburger menu",
   "forecast chart cards",
   "mobile-friendly sun and moon"
 ];

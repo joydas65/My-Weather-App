@@ -8,6 +8,7 @@ const read = (path: string) => readFileSync(join(root, path), "utf8");
 const dashboard = read("components/weather/weather-dashboard.tsx");
 const forecastChart = read("components/weather/forecast-chart.tsx");
 const sunMoonTable = read("components/weather/sun-moon-table.tsx");
+const weatherMenu = read("components/weather/weather-menu.tsx");
 
 describe("UX structure", () => {
   it("keeps retired legacy assets out of the product", () => {
@@ -45,11 +46,27 @@ describe("UX structure", () => {
   it("keeps the mobile-first dashboard structure useful on first load", () => {
     expect(dashboard).toContain("Choose a location");
     expect(dashboard).toContain("Search a city or use your current location");
+    expect(dashboard).toContain("WeatherMenuDrawer");
     expect(dashboard).toContain("flex-col");
     expect(dashboard).toContain("sm:flex-row");
     expect(dashboard).toContain("lg:flex-row");
     expect(dashboard).toContain("lg:grid-cols");
     expect(dashboard).toContain("xl:grid-cols");
+  });
+
+  it("keeps the hamburger menu accessible and useful across viewports", () => {
+    expect(dashboard).toContain('aria-label="Open weather menu"');
+    expect(dashboard).toContain('aria-controls="weather-menu-drawer"');
+    expect(dashboard).toContain('aria-expanded={isMenuOpen}');
+    expect(weatherMenu).toContain('role="dialog"');
+    expect(weatherMenu).toContain('aria-modal="true"');
+    expect(weatherMenu).toContain('event.key === "Escape"');
+    expect(weatherMenu).toContain("Search location");
+    expect(weatherMenu).toContain("Use current location");
+    expect(weatherMenu).toContain("Refresh weather");
+    expect(weatherMenu).toContain("#forecast-charts");
+    expect(weatherMenu).toContain("#daily-outlook");
+    expect(weatherMenu).toContain("#sun-moon");
   });
 
   it("keeps forecast chart cards shrinkable on narrow phones", () => {
