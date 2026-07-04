@@ -7,6 +7,7 @@ const packageJson = JSON.parse(await readFile(join(root, "package.json"), "utf8"
 const readme = await readFile(join(root, "README.md"), "utf8");
 const scaffoldAudit = await readFile(join(root, "docs", "scaffold-audit.md"), "utf8");
 const formatterTests = await readFile(join(root, "tests", "formatters.test.ts"), "utf8");
+const vercelConfig = JSON.parse(await readFile(join(root, "vercel.json"), "utf8"));
 
 const requiredScripts = [
   "dev",
@@ -42,6 +43,14 @@ for (const envVar of requiredEnvVars) {
   if (!readme.includes(envVar) || !scaffoldAudit.includes(envVar)) {
     failures.push(`${envVar} is not documented consistently.`);
   }
+}
+
+if (vercelConfig.framework !== "nextjs") {
+  failures.push("vercel.json must pin the Vercel framework preset to nextjs.");
+}
+
+if (!readme.includes("vercel.json") || !scaffoldAudit.includes("Vercel deployment configuration")) {
+  failures.push("Vercel deployment configuration is not documented consistently.");
 }
 
 for (const asset of requiredPublicAssets) {

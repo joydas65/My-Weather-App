@@ -83,7 +83,12 @@ Do not expose this key through client components or browser JavaScript.
 - `tests/` contains unit tests for shared weather logic.
 - `scripts/audit-consistency.mjs` checks documentation, assets, and test coverage consistency.
 - `public/` contains static assets used by the Next.js app.
+- `vercel.json` pins the Vercel framework preset to Next.js for production deployments.
 
 ## Migration Notes
 
 The original static app used direct browser geolocation, OpenWeather requests from client-side JavaScript, Bootstrap, and global DOM mutation. Its root HTML files, `css/index.css`, and `js/index.js` have been removed. The new scaffold shifts toward typed React state, server-side API boundaries, Tailwind styling, and testable utilities.
+
+## Deployment
+
+The app is configured for Vercel with the Next.js framework preset in `vercel.json`. This avoids static-site fallback behavior when a Vercel project is created before framework auto-detection runs.

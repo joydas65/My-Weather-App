@@ -21,6 +21,7 @@ The future live weather data layer must read `OPENWEATHER_API_KEY` from server-s
 - README scripts match `package.json`.
 - `OPENWEATHER_API_KEY` appears in scaffold documentation.
 - Required public assets are present.
+- Vercel deployment configuration pins the framework preset to Next.js.
 - The retired legacy static HTML/CSS/JS files remain absent.
 - Weather formatter utilities are covered by unit tests.
 
