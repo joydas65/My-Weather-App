@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  convertTemperature,
   formatPercent,
   formatPressure,
   formatTemperature,
@@ -16,6 +17,15 @@ describe("weather formatters", () => {
     expect(formatPressure(1015.4)).toBe("1015 hPa");
     expect(formatVisibility(10000)).toBe("10.0 km");
     expect(formatWindSpeed(5.84)).toBe("5.8 m/s");
+  });
+
+  it("formats values with persisted unit preferences", () => {
+    expect(convertTemperature(21, "fahrenheit")).toBeCloseTo(69.8);
+    expect(formatTemperature(21, "fahrenheit")).toBe("70 F");
+    expect(formatPressure(1013.25, "inhg")).toBe("29.92 inHg");
+    expect(formatVisibility(1609.344, "mi")).toBe("1.0 mi");
+    expect(formatWindSpeed(10, "kmh")).toBe("36.0 km/h");
+    expect(formatWindSpeed(10, "mph")).toBe("22.4 mph");
   });
 
   it("maps wind degrees to compass directions", () => {

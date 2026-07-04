@@ -9,6 +9,7 @@ const dashboard = read("components/weather/weather-dashboard.tsx");
 const forecastChart = read("components/weather/forecast-chart.tsx");
 const sunMoonTable = read("components/weather/sun-moon-table.tsx");
 const weatherMenu = read("components/weather/weather-menu.tsx");
+const preferences = read("lib/weather/preferences.ts");
 
 describe("UX structure", () => {
   it("keeps retired legacy assets out of the product", () => {
@@ -63,10 +64,21 @@ describe("UX structure", () => {
     expect(weatherMenu).toContain('event.key === "Escape"');
     expect(weatherMenu).toContain("Search location");
     expect(weatherMenu).toContain("Use current location");
+    expect(weatherMenu).toContain("Locations");
+    expect(weatherMenu).toContain("Save current location");
+    expect(weatherMenu).toContain("No saved locations");
+    expect(weatherMenu).toContain("No recent locations");
+    expect(weatherMenu).toContain("aria-current");
+    expect(weatherMenu).toContain("aria-pressed");
+    expect(weatherMenu).toContain("Temperature");
+    expect(weatherMenu).toContain("Measurement preferences");
     expect(weatherMenu).toContain("Refresh weather");
     expect(weatherMenu).toContain("#forecast-charts");
     expect(weatherMenu).toContain("#daily-outlook");
     expect(weatherMenu).toContain("#sun-moon");
+    expect(preferences).toContain("WEATHER_MENU_PREFERENCES_KEY");
+    expect(preferences).toContain("readWeatherMenuPreferences");
+    expect(preferences).toContain("writeWeatherMenuPreferences");
   });
 
   it("keeps forecast chart cards shrinkable on narrow phones", () => {

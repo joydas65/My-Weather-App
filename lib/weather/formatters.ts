@@ -1,3 +1,10 @@
+import type {
+  PressureUnit,
+  TemperatureUnit,
+  VisibilityUnit,
+  WindSpeedUnit
+} from "@/lib/weather/preferences";
+
 const WIND_DIRECTIONS = [
   "N",
   "NNE",
@@ -17,23 +24,47 @@ const WIND_DIRECTIONS = [
   "NNW"
 ];
 
-export function formatTemperature(value: number) {
-  return `${Math.round(value)} C`;
+export function convertTemperature(valueC: number, unit: TemperatureUnit) {
+  return unit === "fahrenheit" ? valueC * (9 / 5) + 32 : valueC;
+}
+
+export function formatTemperature(
+  value: number,
+  unit: TemperatureUnit = "celsius"
+) {
+  const suffix = unit === "fahrenheit" ? "F" : "C";
+  return `${Math.round(convertTemperature(value, unit))} ${suffix}`;
 }
 
 export function formatPercent(value: number) {
   return `${Math.round(value)}%`;
 }
 
-export function formatPressure(value: number) {
+export function formatPressure(value: number, unit: PressureUnit = "hpa") {
+  if (unit === "inhg") {
+    return `${(value * 0.0295299830714).toFixed(2)} inHg`;
+  }
+
   return `${Math.round(value)} hPa`;
 }
 
-export function formatWindSpeed(value: number) {
+export function formatWindSpeed(value: number, unit: WindSpeedUnit = "ms") {
+  if (unit === "kmh") {
+    return `${(value * 3.6).toFixed(1)} km/h`;
+  }
+
+  if (unit === "mph") {
+    return `${(value * 2.2369362921).toFixed(1)} mph`;
+  }
+
   return `${value.toFixed(1)} m/s`;
 }
 
-export function formatVisibility(value: number) {
+export function formatVisibility(value: number, unit: VisibilityUnit = "km") {
+  if (unit === "mi") {
+    return `${(value / 1609.344).toFixed(1)} mi`;
+  }
+
   return `${(value / 1000).toFixed(1)} km`;
 }
 

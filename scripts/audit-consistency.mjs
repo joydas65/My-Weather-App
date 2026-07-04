@@ -14,6 +14,10 @@ const forecastChartTests = await readFile(
   join(root, "tests", "forecast-chart.test.tsx"),
   "utf8"
 );
+const menuPreferenceTests = await readFile(
+  join(root, "tests", "menu-preferences.test.ts"),
+  "utf8"
+);
 const uxStructureTests = await readFile(
   join(root, "tests", "ux-structure.test.ts"),
   "utf8"
@@ -24,6 +28,10 @@ const weatherComponentTests = await readFile(
   "utf8"
 );
 const weatherTypes = await readFile(join(root, "lib", "weather", "types.ts"), "utf8");
+const weatherPreferences = await readFile(
+  join(root, "lib", "weather", "preferences.ts"),
+  "utf8"
+);
 const astronomyHelpers = await readFile(
   join(root, "lib", "weather", "astronomy.ts"),
   "utf8"
@@ -131,10 +139,16 @@ if (
 if (
   !readme.includes("hamburger menu") ||
   !readme.includes("keyboard-accessible drawer") ||
+  !readme.includes("saved and recent locations") ||
+  !readme.includes("unit preferences") ||
+  !readme.includes("localStorage") ||
   !scaffoldAudit.includes("hamburger menu") ||
-  !scaffoldAudit.includes("keyboard-accessible drawer")
+  !scaffoldAudit.includes("keyboard-accessible drawer") ||
+  !scaffoldAudit.includes("saved and recent locations") ||
+  !scaffoldAudit.includes("unit preferences") ||
+  !scaffoldAudit.includes("localStorage")
 ) {
-  failures.push("The hamburger menu foundation is not documented consistently.");
+  failures.push("The hamburger menu, location, unit preference, and local persistence expectations are not documented consistently.");
 }
 
 if (readme.includes("OPENWEATHER_API_KEY") || scaffoldAudit.includes("OPENWEATHER_API_KEY")) {
@@ -233,9 +247,14 @@ if (
   !weatherDashboard.includes("WeatherConditionIcon") ||
   !weatherDashboard.includes("WeatherMenuDrawer") ||
   !weatherDashboard.includes("lastRequest") ||
-  !weatherDashboard.includes("refreshWeather")
+  !weatherDashboard.includes("refreshWeather") ||
+  !weatherDashboard.includes("readWeatherMenuPreferences") ||
+  !weatherDashboard.includes("writeWeatherMenuPreferences") ||
+  !weatherDashboard.includes("addRecentLocation") ||
+  !weatherDashboard.includes("saveCurrentLocation") ||
+  !weatherDashboard.includes("changeUnitPreference")
 ) {
-  failures.push("The dashboard must expose last-updated status, typed state panels, notices, dynamic condition icons, and menu refresh wiring.");
+  failures.push("The dashboard must expose last-updated status, typed state panels, notices, dynamic condition icons, menu refresh wiring, and persisted menu preferences.");
 }
 
 if (
@@ -247,12 +266,33 @@ if (
   !weatherMenu.includes('event.key === "Escape"') ||
   !weatherMenu.includes("Search location") ||
   !weatherMenu.includes("Use current location") ||
+  !weatherMenu.includes("Locations") ||
+  !weatherMenu.includes("Save current location") ||
+  !weatherMenu.includes("No saved locations") ||
+  !weatherMenu.includes("No recent locations") ||
+  !weatherMenu.includes("aria-current") ||
+  !weatherMenu.includes("aria-pressed") ||
+  !weatherMenu.includes("Temperature") ||
+  !weatherMenu.includes("Measurement preferences") ||
   !weatherMenu.includes("Refresh weather") ||
   !weatherMenu.includes("#forecast-charts") ||
   !weatherMenu.includes("#daily-outlook") ||
   !weatherMenu.includes("#sun-moon")
 ) {
-  failures.push("The hamburger menu must stay accessible, keyboard-closeable, and useful for dashboard navigation, location, and refresh actions.");
+  failures.push("The hamburger menu must stay accessible, keyboard-closeable, and useful for dashboard navigation, saved/recent locations, unit preferences, and refresh actions.");
+}
+
+if (
+  !weatherPreferences.includes("WEATHER_MENU_PREFERENCES_KEY") ||
+  !weatherPreferences.includes("DEFAULT_UNIT_PREFERENCES") ||
+  !weatherPreferences.includes("readWeatherMenuPreferences") ||
+  !weatherPreferences.includes("writeWeatherMenuPreferences") ||
+  !weatherPreferences.includes("addRecentLocation") ||
+  !weatherPreferences.includes("saveMenuLocation") ||
+  !weatherPreferences.includes("removeSavedMenuLocation") ||
+  !weatherPreferences.includes("updateWeatherUnitPreference")
+) {
+  failures.push("Weather menu preferences must centralize unit, saved location, recent location, and localStorage behavior.");
 }
 
 if (
@@ -356,6 +396,7 @@ if (!scaffoldAudit.includes("legacy static HTML/CSS/JS files remain absent")) {
 }
 
 const formatterNames = [
+  "convertTemperature",
   "formatTemperature",
   "formatPercent",
   "formatPressure",
@@ -368,6 +409,22 @@ const formatterNames = [
 for (const formatterName of formatterNames) {
   if (!formatterTests.includes(formatterName)) {
     failures.push(`${formatterName} is missing formatter test coverage.`);
+  }
+}
+
+const menuPreferenceCoverage = [
+  "normalizeWeatherMenuPreferences",
+  "readWeatherMenuPreferences",
+  "writeWeatherMenuPreferences",
+  "updateWeatherUnitPreference",
+  "addRecentLocation",
+  "saveMenuLocation",
+  "removeSavedMenuLocation"
+];
+
+for (const coveredName of menuPreferenceCoverage) {
+  if (!menuPreferenceTests.includes(coveredName)) {
+    failures.push(`${coveredName} is missing menu preference test coverage.`);
   }
 }
 
@@ -406,7 +463,8 @@ const forecastChartCoverage = [
   "No forecast trend yet",
   "Chart unavailable",
   "tooltip",
-  "aria-label"
+  "aria-label",
+  "fahrenheit"
 ];
 
 for (const coveredName of forecastChartCoverage) {
@@ -441,6 +499,7 @@ const uxStructureCoverage = [
   "accessible loading",
   "mobile-first dashboard",
   "hamburger menu",
+  "WEATHER_MENU_PREFERENCES_KEY",
   "forecast chart cards",
   "mobile-friendly sun and moon"
 ];

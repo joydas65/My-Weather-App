@@ -21,6 +21,14 @@ import {
   buildPrecipitationSeries,
   buildTemperatureSeries
 } from "@/lib/weather/chart-data";
+import {
+  convertTemperature,
+  formatTemperature
+} from "@/lib/weather/formatters";
+import {
+  DEFAULT_UNIT_PREFERENCES,
+  type WeatherUnitPreferences
+} from "@/lib/weather/preferences";
 
 ChartJS.register(
   CategoryScale,
@@ -37,6 +45,7 @@ export type ForecastChartMode = "precipitation" | "temperature";
 type ForecastChartProps = {
   daily: DailyForecast[];
   mode: ForecastChartMode;
+  units?: WeatherUnitPreferences;
 };
 
 type ForecastChartStatus = "empty" | "error";
@@ -71,8 +80,12 @@ type ForecastChartErrorBoundaryState = {
   hasError: boolean;
 };
 
-export function ForecastChart({ daily, mode }: ForecastChartProps) {
-  const model = buildForecastChartModel(daily, mode);
+export function ForecastChart({
+  daily,
+  mode,
+  units = DEFAULT_UNIT_PREFERENCES
+}: ForecastChartProps) {
+  const model = buildForecastChartModel(daily, mode, units);
 
   if (model.status !== "ready") {
     return (
@@ -125,7 +138,8 @@ export function ForecastChart({ daily, mode }: ForecastChartProps) {
 
 export function buildForecastChartModel(
   daily: DailyForecast[],
-  mode: ForecastChartMode
+  mode: ForecastChartMode,
+  units: WeatherUnitPreferences = DEFAULT_UNIT_PREFERENCES
 ): ForecastChartModel {
   if (daily.length === 0) {
     return {
@@ -145,10 +159,15 @@ export function buildForecastChartModel(
 
   const precipitation = buildPrecipitationSeries(daily);
   const temperature = buildTemperatureSeries(daily);
+  const rawTemperatures = daily.map((day) => ({
+    max: day.temperatureMaxC,
+    min: day.temperatureMinC
+  }));
   const isPrecipitation = mode === "precipitation";
   const labels = (isPrecipitation ? precipitation : temperature).map(
     (item) => item.label
   );
+  const temperatureSuffix = units.temperature === "fahrenheit" ? "F" : "C";
 
   const data: ChartData<"line", number[], string> = isPrecipitation
     ? {
@@ -176,7 +195,9 @@ export function buildForecastChartModel(
         datasets: [
           {
             label: "High",
-            data: temperature.map((item) => item.max),
+            data: rawTemperatures.map((item) =>
+              Math.round(convertTemperature(item.max, units.temperature))
+            ),
             borderColor: "#e11d48",
             backgroundColor: "rgba(225, 29, 72, 0.08)",
             borderWidth: 3,
@@ -191,7 +212,9 @@ export function buildForecastChartModel(
           },
           {
             label: "Low",
-            data: temperature.map((item) => item.min),
+            data: rawTemperatures.map((item) =>
+              Math.round(convertTemperature(item.min, units.temperature))
+            ),
             borderColor: "#4f46e5",
             backgroundColor: "rgba(79, 70, 229, 0.08)",
             borderWidth: 3,
@@ -213,20 +236,22 @@ export function buildForecastChartModel(
       ? "Precipitation probability forecast chart"
       : "Daily high and low temperature forecast chart",
     data,
-    options: buildForecastChartOptions(isPrecipitation),
+    options: buildForecastChartOptions(isPrecipitation, temperatureSuffix),
     summary: isPrecipitation
       ? buildPrecipitationSummary(precipitation.map((item) => item.value))
       : buildTemperatureSummary(
-          temperature.map((item) => item.min),
-          temperature.map((item) => item.max)
+          rawTemperatures.map((item) => item.min),
+          rawTemperatures.map((item) => item.max),
+          units
         )
   };
 }
 
 function buildForecastChartOptions(
-  isPrecipitation: boolean
+  isPrecipitation: boolean,
+  temperatureSuffix: string
 ): ChartOptions<"line"> {
-  const valueSuffix = isPrecipitation ? "%" : " C";
+  const valueSuffix = isPrecipitation ? "%" : ` ${temperatureSuffix}`;
 
   return {
     maintainAspectRatio: false,
@@ -330,7 +355,9 @@ function buildForecastChartOptions(
             size: 12,
             weight: 600
           },
-          text: isPrecipitation ? "Probability (%)" : "Temperature (C)"
+          text: isPrecipitation
+            ? "Probability (%)"
+            : `Temperature (${temperatureSuffix})`
         }
       }
     }
@@ -431,10 +458,17 @@ function buildPrecipitationSummary(values: number[]): ForecastChartSummaryItem[]
 
 function buildTemperatureSummary(
   minimums: number[],
-  maximums: number[]
+  maximums: number[],
+  units: WeatherUnitPreferences
 ): ForecastChartSummaryItem[] {
   return [
-    { label: "Warmest", value: `${Math.max(...maximums)} C` },
-    { label: "Coolest", value: `${Math.min(...minimums)} C` }
+    {
+      label: "Warmest",
+      value: formatTemperature(Math.max(...maximums), units.temperature)
+    },
+    {
+      label: "Coolest",
+      value: formatTemperature(Math.min(...minimums), units.temperature)
+    }
   ];
 }

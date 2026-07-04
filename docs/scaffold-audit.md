@@ -20,7 +20,7 @@ The dashboard starts without demo weather and asks the user to search or grant l
 
 Forecast charts use Chart.js through `react-chartjs-2` and must keep precipitation probability plus min/max temperature concepts. The chart components own responsive labels, styled tooltips, summary context, chart empty and error states, and renderable fallback UI when data is missing or invalid.
 
-The app uses a mobile-first product layout. Search and location actions are available on the first screen, loading and alert states use accessible React components, forecast chart cards shrink safely on narrow phones, and sun/moon timing renders mobile cards before a desktop table. A hamburger menu is available across viewport sizes and opens a keyboard-accessible drawer with search/location actions, dashboard section jumps, provider context, last-updated status, and refresh behavior. The audit expects legacy loading GIFs, unrelated brand artwork, bitmap chart decorations, and demo weather data remain absent.
+The app uses a mobile-first product layout. Search and location actions are available on the first screen, loading and alert states use accessible React components, forecast chart cards shrink safely on narrow phones, and sun/moon timing renders mobile cards before a desktop table. A hamburger menu is available across viewport sizes and opens a keyboard-accessible drawer with search/location actions, saved and recent locations, unit preferences, dashboard section jumps, provider context, last-updated status, and refresh behavior. Menu preferences are normalized through shared helpers and persisted in `localStorage` with resilient defaults when browser storage is unavailable. The audit expects legacy loading GIFs, unrelated brand artwork, bitmap chart decorations, and demo weather data remain absent.
 
 ## Audit Scope
 
@@ -33,13 +33,14 @@ The app uses a mobile-first product layout. Search and location actions are avai
 - The weather API exposes stable error codes for invalid input, no results, and provider failures.
 - Weather models include explicit provider metadata, sun/moon timing, and chart series types.
 - The dashboard exposes dynamic condition icons, last-updated status, and typed empty/loading/error/no-result states.
-- The hamburger menu exposes a keyboard-accessible drawer with section navigation, location/search actions, provider context, and refresh behavior.
+- The hamburger menu exposes a keyboard-accessible drawer with section navigation, location/search actions, saved and recent locations, unit preferences, provider context, and refresh behavior.
 - Accessible loading/alert components replace legacy spinner or toast assets.
 - Responsive dashboard structure and mobile-friendly sun/moon timing are covered.
 - Vercel deployment configuration pins the framework preset to Next.js.
 - The retired legacy static HTML/CSS/JS files remain absent.
 - Retired legacy loading GIFs, unrelated brand artwork, bitmap chart decorations, and demo data remain absent.
-- Weather formatter utilities are covered by unit tests.
+- Weather formatter utilities, including unit-aware conversions, are covered by unit tests.
+- Menu preference helpers for localStorage, saved locations, recent locations, and unit preferences are covered by unit tests.
 - Open-Meteo weather-code and response mapping are covered by unit tests.
 - Weather API error-code mapping is covered by unit tests.
 - Chart-data builders, ForecastChart component behavior, astronomy helpers, and weather component behavior are covered by unit tests.

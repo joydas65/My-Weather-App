@@ -4,7 +4,7 @@ A weather dashboard scaffolded with Next.js, React, TypeScript, Tailwind CSS, an
 
 ## Current State
 
-The repository now contains a Next.js App Router weather app with a realistic dashboard shell, live weather lookup, typed empty/loading/error states, dynamic weather condition icons, formatter utilities, resilient Chart.js forecast visualizations, a keyboard-accessible drawer opened from a hamburger menu, and unit tests. Legacy static HTML/CSS/JS files have been retired so the Next.js app is the single active implementation.
+The repository now contains a Next.js App Router weather app with a realistic dashboard shell, live weather lookup, typed empty/loading/error states, dynamic weather condition icons, formatter utilities, resilient Chart.js forecast visualizations, a keyboard-accessible drawer opened from a hamburger menu, persisted menu preferences, and unit tests. Legacy static HTML/CSS/JS files have been retired so the Next.js app is the single active implementation.
 
 ## Tech Stack
 
@@ -77,14 +77,14 @@ Forecast charts use Chart.js through `react-chartjs-2` for precipitation probabi
 
 The UI is mobile-first: the first screen exposes search and current-location actions immediately, loading and alert states use accessible React components, forecast chart cards shrink safely on narrow phones, and the sun/moon timing view renders compact mobile cards before switching to a desktop table. Legacy loading GIFs, unrelated brand artwork, bitmap chart decorations, and demo weather data are retired.
 
-The hamburger menu is available on mobile and desktop. Its keyboard-accessible drawer provides search/location actions, dashboard section jumps, Open-Meteo provider context, last-updated status, and a refresh action after weather data has loaded.
+The hamburger menu is available on mobile and desktop. Its keyboard-accessible drawer provides search/location actions, saved and recent locations, unit preferences, dashboard section jumps, Open-Meteo provider context, last-updated status, and a refresh action after weather data has loaded. Menu preferences are normalized through shared helpers and persisted in `localStorage` with resilient defaults when browser storage is unavailable.
 
 ## Project Structure
 
 - `app/` contains Next.js routes, layout, and global styles.
 - `app/api/weather/` contains the server-side weather endpoint used by search and geolocation.
 - `components/weather/` contains dashboard UI pieces, including metric cards, resilient forecast charts, timing tables, notices, the hamburger menu drawer, and dynamic condition icons.
-- `lib/weather/` contains typed weather data helpers, API error contracts, chart series builders, sun/moon helpers, the Open-Meteo adapter, and formatters.
+- `lib/weather/` contains typed weather data helpers, API error contracts, chart series builders, sun/moon helpers, the Open-Meteo adapter, menu preference helpers, and unit-aware formatters.
 - `tests/` contains unit tests for shared weather logic, chart series, forecast chart behavior, provider mapping, astronomy helpers, and component behavior.
 - `scripts/audit-consistency.mjs` checks documentation, assets, and test coverage consistency.
 - `vercel.json` pins the Vercel framework preset to Next.js for production deployments.

@@ -20,7 +20,7 @@ import {
   Thermometer,
   Wind
 } from "lucide-react";
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { DailyForecast } from "@/components/weather/daily-forecast";
 import { ForecastChart } from "@/components/weather/forecast-chart";
 import { MetricCard } from "@/components/weather/metric-card";
@@ -43,6 +43,19 @@ import {
   getSunEventStatus,
   getWindDirection
 } from "@/lib/weather/formatters";
+import {
+  addRecentLocation,
+  createWeatherMenuLocation,
+  isMenuLocationSaved,
+  readWeatherMenuPreferences,
+  removeSavedMenuLocation,
+  saveMenuLocation,
+  updateWeatherUnitPreference,
+  writeWeatherMenuPreferences,
+  type WeatherMenuLocation,
+  type WeatherMenuPreferences,
+  type WeatherUnitPreferences
+} from "@/lib/weather/preferences";
 
 type WeatherDashboardProps = {
   initialWeather?: WeatherReport;
@@ -94,12 +107,22 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
   const [query, setQuery] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [lastRequest, setLastRequest] = useState<WeatherRetry | null>(null);
+  const [menuPreferences, setMenuPreferences] =
+    useState<WeatherMenuPreferences>(() => readWeatherMenuPreferences());
   const [viewState, setViewState] = useState<WeatherViewState>(
     initialWeather ? { status: "ready" } : { status: "empty" }
   );
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const noticeTimerRef = useRef<number | null>(null);
   const isLoading = viewState.status === "loading";
+  const currentMenuLocation =
+    weather && lastRequest
+      ? createWeatherMenuLocation(weather, lastRequest.endpoint)
+      : null;
+  const isCurrentLocationSaved = isMenuLocationSaved(
+    menuPreferences,
+    currentMenuLocation?.id
+  );
 
   const sunStatus = weather
     ? getSunEventStatus(
@@ -108,6 +131,10 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
         weather.current.sunset
       )
     : null;
+
+  useEffect(() => {
+    writeWeatherMenuPreferences(menuPreferences);
+  }, [menuPreferences]);
 
   function showSettledNotice(
     message: string,
@@ -183,6 +210,12 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
 
       setWeather(payload.weather);
       setLastRequest({ endpoint, loading: state });
+      setMenuPreferences((current) =>
+        addRecentLocation(
+          current,
+          createWeatherMenuLocation(payload.weather, endpoint)
+        )
+      );
       setQuery("");
       showSettledNotice(successMessage(payload.weather), "success");
     } catch (error) {
@@ -305,6 +338,46 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
     );
   }
 
+  function loadMenuLocation(location: WeatherMenuLocation) {
+    if (isLoading) {
+      return;
+    }
+
+    void loadWeather(
+      location.endpoint,
+      {
+        title: `Loading ${location.label}`,
+        detail: "Refreshing current conditions and the 8-day outlook."
+      },
+      (updatedWeather) => `Showing ${updatedWeather.current.locationName}`
+    );
+  }
+
+  function saveCurrentLocation() {
+    if (!currentMenuLocation || isCurrentLocationSaved) {
+      return;
+    }
+
+    setMenuPreferences((current) =>
+      saveMenuLocation(current, currentMenuLocation)
+    );
+    showSettledNotice(`Saved ${currentMenuLocation.label}`, "success");
+  }
+
+  function removeSavedLocation(locationId: string) {
+    setMenuPreferences((current) =>
+      removeSavedMenuLocation(current, locationId)
+    );
+  }
+
+  function changeUnitPreference<
+    UnitName extends keyof WeatherUnitPreferences
+  >(unitName: UnitName, value: WeatherUnitPreferences[UnitName]) {
+    setMenuPreferences((current) =>
+      updateWeatherUnitPreference(current, unitName, value)
+    );
+  }
+
   const location = weather
     ? [weather.current.locationName, weather.current.country]
         .filter(Boolean)
@@ -315,11 +388,19 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
     <main className="min-h-screen">
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
         <WeatherMenuDrawer
+          activeLocationId={currentMenuLocation?.id}
+          currentLocation={currentMenuLocation}
           isLoading={isLoading}
           isOpen={isMenuOpen}
+          isCurrentLocationSaved={isCurrentLocationSaved}
           onClose={closeMenu}
+          onLoadLocation={loadMenuLocation}
           onRefresh={weather && lastRequest ? refreshWeather : undefined}
+          onRemoveSavedLocation={removeSavedLocation}
+          onSaveCurrentLocation={saveCurrentLocation}
+          onUnitPreferenceChange={changeUnitPreference}
           onUseLocation={handleUseLocation}
+          preferences={menuPreferences}
           weather={weather}
         />
 
@@ -419,6 +500,7 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
           <WeatherReportSections
             isLoading={isLoading}
             sunStatus={sunStatus}
+            units={menuPreferences.units}
             weather={weather}
           />
         ) : null}
@@ -430,10 +512,12 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
 function WeatherReportSections({
   isLoading,
   sunStatus,
+  units,
   weather
 }: {
   isLoading: boolean;
   sunStatus: { sunrise: string; sunset: string };
+  units: WeatherUnitPreferences;
   weather: WeatherReport;
 }) {
   return (
@@ -450,10 +534,17 @@ function WeatherReportSections({
                   Observed {formatTime(weather.current.observedAt, weather.current.timezone)}
                 </p>
                 <p className="mt-4 text-6xl font-semibold tracking-normal">
-                  {formatTemperature(weather.current.temperatureC)}
+                  {formatTemperature(
+                    weather.current.temperatureC,
+                    units.temperature
+                  )}
                 </p>
                 <p className="mt-3 text-sm text-slate-300">
-                  Feels like {formatTemperature(weather.current.feelsLikeC)}
+                  Feels like{" "}
+                  {formatTemperature(
+                    weather.current.feelsLikeC,
+                    units.temperature
+                  )}
                 </p>
               </div>
               <WeatherConditionIcon
@@ -491,7 +582,10 @@ function WeatherReportSections({
               icon={Wind}
               label="Wind"
               tone="aqua"
-              value={formatWindSpeed(weather.current.windSpeedMs)}
+              value={formatWindSpeed(
+                weather.current.windSpeedMs,
+                units.windSpeed
+              )}
             />
             <MetricCard
               icon={Droplets}
@@ -503,19 +597,28 @@ function WeatherReportSections({
               icon={Gauge}
               label="Pressure"
               tone="stone"
-              value={formatPressure(weather.current.pressureHpa)}
+              value={formatPressure(
+                weather.current.pressureHpa,
+                units.pressure
+              )}
             />
             <MetricCard
               icon={Thermometer}
               label="Dew point"
               tone="rose"
-              value={formatTemperature(weather.current.dewPointC)}
+              value={formatTemperature(
+                weather.current.dewPointC,
+                units.temperature
+              )}
             />
             <MetricCard
               icon={Eye}
               label="Visibility"
               tone="indigo"
-              value={formatVisibility(weather.current.visibilityMeters)}
+              value={formatVisibility(
+                weather.current.visibilityMeters,
+                units.visibility
+              )}
             />
             <MetricCard
               icon={Cloud}
@@ -539,7 +642,11 @@ function WeatherReportSections({
                 <CloudRain aria-hidden="true" className="h-5 w-5" />
               </span>
             </div>
-            <ForecastChart daily={weather.daily} mode="precipitation" />
+            <ForecastChart
+              daily={weather.daily}
+              mode="precipitation"
+              units={units}
+            />
           </article>
 
           <article className="min-w-0 rounded-lg border border-black/5 bg-white/85 p-4 shadow-sm shadow-slate-200/70 sm:p-5">
@@ -551,7 +658,11 @@ function WeatherReportSections({
                 Daily range
               </h2>
             </div>
-            <ForecastChart daily={weather.daily} mode="temperature" />
+            <ForecastChart
+              daily={weather.daily}
+              mode="temperature"
+              units={units}
+            />
           </article>
         </section>
 
@@ -562,7 +673,7 @@ function WeatherReportSections({
               Forecast cards
             </h2>
           </div>
-          <DailyForecast daily={weather.daily} />
+          <DailyForecast daily={weather.daily} units={units} />
         </section>
 
         <section className="scroll-mt-4" id="sun-moon">

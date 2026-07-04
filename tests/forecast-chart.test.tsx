@@ -97,6 +97,28 @@ describe("forecast chart behavior", () => {
     );
   });
 
+  it("builds temperature chart labels from unit preferences", () => {
+    const model = buildForecastChartModel(daily, "temperature", {
+      pressure: "hpa",
+      temperature: "fahrenheit",
+      visibility: "km",
+      windSpeed: "ms"
+    });
+
+    expect(model.status).toBe("ready");
+
+    if (model.status !== "ready") {
+      return;
+    }
+
+    expect(model.data.datasets[0].data).toEqual([71, 76]);
+    expect(model.summary).toEqual([
+      { label: "Warmest", value: "76 F" },
+      { label: "Coolest", value: "58 F" }
+    ]);
+    expect(model.options.scales?.y?.title?.text).toBe("Temperature (F)");
+  });
+
   it("renders a polished empty chart state", () => {
     const markup = renderToStaticMarkup(
       <ForecastChart daily={[]} mode="precipitation" />

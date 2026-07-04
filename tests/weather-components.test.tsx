@@ -12,6 +12,12 @@ import {
   getWeatherConditionPresentation,
   WeatherConditionIcon
 } from "@/components/weather/weather-condition-icon";
+import {
+  addRecentLocation,
+  createDefaultWeatherMenuPreferences,
+  saveMenuLocation,
+  type WeatherMenuLocation
+} from "@/lib/weather/preferences";
 import type { DailyForecast, WeatherReport } from "@/lib/weather/types";
 
 const menuWeather: WeatherReport = {
@@ -44,6 +50,36 @@ const menuWeather: WeatherReport = {
   }
 };
 
+const londonLocation: WeatherMenuLocation = {
+  endpoint: "/api/weather?q=London",
+  id: "/api/weather?q=london",
+  label: "London, GB",
+  updatedAt: "2026-07-04T12:05:00Z"
+};
+
+const parisLocation: WeatherMenuLocation = {
+  endpoint: "/api/weather?q=Paris",
+  id: "/api/weather?q=paris",
+  label: "Paris, FR",
+  updatedAt: "2026-07-04T12:10:00Z"
+};
+
+const menuPreferences = addRecentLocation(
+  saveMenuLocation(
+    {
+      ...createDefaultWeatherMenuPreferences(),
+      units: {
+        pressure: "inhg",
+        temperature: "fahrenheit",
+        visibility: "mi",
+        windSpeed: "mph"
+      }
+    },
+    londonLocation
+  ),
+  parisLocation
+);
+
 describe("weather component behavior", () => {
   it("keeps the expected dashboard view states explicit", () => {
     expect(WEATHER_VIEW_STATES).toEqual([
@@ -69,11 +105,19 @@ describe("weather component behavior", () => {
   it("renders the hamburger menu as an accessible dashboard drawer", () => {
     const markup = renderToStaticMarkup(
       <WeatherMenuDrawer
+        activeLocationId={londonLocation.id}
+        currentLocation={londonLocation}
+        isCurrentLocationSaved
         isLoading={false}
         isOpen
         onClose={() => undefined}
+        onLoadLocation={() => undefined}
         onRefresh={() => undefined}
+        onRemoveSavedLocation={() => undefined}
+        onSaveCurrentLocation={() => undefined}
+        onUnitPreferenceChange={() => undefined}
         onUseLocation={() => undefined}
+        preferences={menuPreferences}
         weather={menuWeather}
       />
     );
@@ -86,8 +130,17 @@ describe("weather component behavior", () => {
     expect(markup).toContain("Forecast charts");
     expect(markup).toContain("Daily outlook");
     expect(markup).toContain("Sun and moon");
+    expect(markup).toContain("Locations");
+    expect(markup).toContain("Current location saved");
+    expect(markup).toContain("London, GB");
+    expect(markup).toContain("Paris, FR");
+    expect(markup).toContain("Units");
+    expect(markup).toContain('aria-pressed="true"');
+    expect(markup).toContain('aria-current="location"');
+    expect(markup).toContain("Remove London, GB from saved locations");
     expect(markup).toContain("Weather data");
     expect(markup).toContain("Refresh weather");
+    expect(markup).toContain("Loaded");
     expect(markup).toContain("Open-Meteo");
   });
 

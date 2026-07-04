@@ -6,12 +6,14 @@ import {
   formatPercent,
   formatTemperature
 } from "@/lib/weather/formatters";
+import type { WeatherUnitPreferences } from "@/lib/weather/preferences";
 
 type DailyForecastProps = {
   daily: DailyForecastType[];
+  units: WeatherUnitPreferences;
 };
 
-export function DailyForecast({ daily }: DailyForecastProps) {
+export function DailyForecast({ daily, units }: DailyForecastProps) {
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {daily.map((day) => (
@@ -37,8 +39,8 @@ export function DailyForecast({ daily }: DailyForecastProps) {
           </p>
           <div className="mt-4 flex items-center justify-between gap-3 text-sm">
             <span className="font-semibold text-slate-950">
-              {formatTemperature(day.temperatureMaxC)} /{" "}
-              {formatTemperature(day.temperatureMinC)}
+              {formatTemperature(day.temperatureMaxC, units.temperature)} /{" "}
+              {formatTemperature(day.temperatureMinC, units.temperature)}
             </span>
             <span className="inline-flex items-center gap-1.5 text-cyan-700">
               <CloudRain aria-hidden="true" className="h-4 w-4" />
