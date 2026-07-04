@@ -4,7 +4,7 @@ A weather dashboard scaffolded with Next.js, React, TypeScript, Tailwind CSS, an
 
 ## Current State
 
-The repository now contains a Next.js App Router weather app with a realistic dashboard shell, live weather lookup, typed fallback sample data, formatter utilities, Chart.js forecast visualizations, and unit tests. Legacy static HTML/CSS/JS files have been retired so the Next.js app is the single active implementation.
+The repository now contains a Next.js App Router weather app with a realistic dashboard shell, live weather lookup, typed fallback sample data, dynamic weather condition icons, formatter utilities, Chart.js forecast visualizations, and unit tests. Legacy static HTML/CSS/JS files have been retired so the Next.js app is the single active implementation.
 
 ## Tech Stack
 
@@ -69,13 +69,15 @@ pnpm check
 
 No weather API key is required for the current live weather flow. Browser search and geolocation call the local `/api/weather` route, which fetches forecast and geocoding data from Open-Meteo on the server side.
 
+Open-Meteo provides sun timing but not moonrise or moonset in the current adapter. The app keeps moon timing nullable, estimates moon phase and illumination from the forecast date, and renders unavailable moon timing explicitly.
+
 ## Project Structure
 
 - `app/` contains Next.js routes, layout, and global styles.
 - `app/api/weather/` contains the server-side weather endpoint used by search and geolocation.
-- `components/weather/` contains dashboard UI pieces.
-- `lib/weather/` contains typed weather data helpers, the Open-Meteo adapter, and formatters.
-- `tests/` contains unit tests for shared weather logic.
+- `components/weather/` contains dashboard UI pieces, including metric cards, forecast charts, timing tables, notices, and dynamic condition icons.
+- `lib/weather/` contains typed weather data helpers, chart series builders, sun/moon helpers, the Open-Meteo adapter, and formatters.
+- `tests/` contains unit tests for shared weather logic, chart series, provider mapping, astronomy helpers, and component behavior.
 - `scripts/audit-consistency.mjs` checks documentation, assets, and test coverage consistency.
 - `public/` contains static assets used by the Next.js app.
 - `vercel.json` pins the Vercel framework preset to Next.js for production deployments.

@@ -1,8 +1,10 @@
 "use client";
 
 import {
+  AlertCircle,
+  CheckCircle2,
   Cloud,
-  CloudSun,
+  Clock3,
   Droplets,
   Eye,
   Gauge,
@@ -16,11 +18,12 @@ import {
   Wind
 } from "lucide-react";
 import Image from "next/image";
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { DailyForecast } from "@/components/weather/daily-forecast";
 import { ForecastChart } from "@/components/weather/forecast-chart";
 import { MetricCard } from "@/components/weather/metric-card";
 import { SunMoonTable } from "@/components/weather/sun-moon-table";
+import { WeatherConditionIcon } from "@/components/weather/weather-condition-icon";
 import type { WeatherReport } from "@/lib/weather/types";
 import {
   formatPercent,
@@ -47,11 +50,17 @@ type WeatherApiResponse = {
   error?: string;
 };
 
+type NoticeState = {
+  message: string;
+  tone: "info" | "success" | "error";
+};
+
 export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
   const [weather, setWeather] = useState(initialWeather);
   const [query, setQuery] = useState("");
   const [loadingState, setLoadingState] = useState<LoadingState | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<NoticeState | null>(null);
+  const noticeTimerRef = useRef<number | null>(null);
   const isLoading = loadingState !== null;
 
   const sunStatus = getSunEventStatus(
@@ -60,9 +69,16 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
     weather.current.sunset
   );
 
-  function showSettledNotice(message: string) {
-    setNotice(message);
-    window.setTimeout(() => setNotice(null), 2600);
+  function showSettledNotice(
+    message: string,
+    tone: NoticeState["tone"] = "info"
+  ) {
+    if (noticeTimerRef.current !== null) {
+      window.clearTimeout(noticeTimerRef.current);
+    }
+
+    setNotice({ message, tone });
+    noticeTimerRef.current = window.setTimeout(() => setNotice(null), 3000);
   }
 
   async function loadWeather(
@@ -83,13 +99,13 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
 
       setWeather(payload.weather);
       setQuery("");
-      showSettledNotice(successMessage(payload.weather));
+      showSettledNotice(successMessage(payload.weather), "success");
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
           : "Weather data is temporarily unavailable.";
-      showSettledNotice(message);
+      showSettledNotice(message, "error");
     } finally {
       setLoadingState(null);
     }
@@ -100,7 +116,7 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
     const trimmedQuery = query.trim();
 
     if (!trimmedQuery) {
-      showSettledNotice("Enter a city or ZIP code");
+      showSettledNotice("Enter a city or ZIP code", "error");
       return;
     }
 
@@ -118,7 +134,7 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
 
   function handleUseLocation() {
     if (!navigator.geolocation) {
-      showSettledNotice("Location is unavailable in this browser");
+      showSettledNotice("Location is unavailable in this browser", "error");
       return;
     }
 
@@ -146,7 +162,7 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
       },
       () => {
         setLoadingState(null);
-        showSettledNotice("Location access blocked");
+        showSettledNotice("Location access blocked or timed out", "error");
       },
       {
         enableHighAccuracy: true,
@@ -171,6 +187,15 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
             <h1 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950 sm:text-4xl">
               {weather.current.description}
             </h1>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
+              <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 ring-1 ring-slate-100">
+                <Clock3 aria-hidden="true" className="h-3.5 w-3.5" />
+                Updated {formatTime(weather.metadata.fetchedAt, weather.current.timezone)}
+              </span>
+              <span className="rounded-lg bg-slate-50 px-2.5 py-1 ring-1 ring-slate-100">
+                {weather.metadata.provider}
+              </span>
+            </div>
           </div>
           <form
             className="flex w-full flex-col gap-2 sm:flex-row lg:max-w-xl"
@@ -223,9 +248,7 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
         {loadingState ? (
           <WeatherLoadingPanel state={loadingState} />
         ) : notice ? (
-          <div className="rounded-lg border border-cyan-100 bg-cyan-50 px-4 py-3 text-sm font-medium text-cyan-800">
-            {notice}
-          </div>
+          <NoticePanel notice={notice} />
         ) : null}
 
         <section
@@ -245,9 +268,10 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
                   Feels like {formatTemperature(weather.current.feelsLikeC)}
                 </p>
               </div>
-              <div className="rounded-lg bg-white/10 p-4">
-                <CloudSun aria-hidden="true" className="h-16 w-16 text-amber-200" />
-              </div>
+              <WeatherConditionIcon
+                condition={weather.current.condition}
+                isDay={weather.current.isDay}
+              />
             </div>
             <div className="mt-8 grid grid-cols-2 gap-3 text-sm">
               <div className="rounded-lg bg-white/10 p-3">
@@ -393,6 +417,38 @@ function WeatherLoadingPanel({ state }: { state: LoadingState }) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function NoticePanel({ notice }: { notice: NoticeState }) {
+  const toneClasses = {
+    info: {
+      box: "border-cyan-100 bg-cyan-50 text-cyan-800",
+      icon: "text-cyan-700",
+      iconNode: AlertCircle
+    },
+    success: {
+      box: "border-emerald-100 bg-emerald-50 text-emerald-800",
+      icon: "text-emerald-700",
+      iconNode: CheckCircle2
+    },
+    error: {
+      box: "border-rose-100 bg-rose-50 text-rose-800",
+      icon: "text-rose-700",
+      iconNode: AlertCircle
+    }
+  }[notice.tone];
+  const Icon = toneClasses.iconNode;
+
+  return (
+    <div
+      aria-live="polite"
+      className={`inline-flex items-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium ${toneClasses.box}`}
+      role={notice.tone === "error" ? "alert" : "status"}
+    >
+      <Icon aria-hidden="true" className={`h-4 w-4 ${toneClasses.icon}`} />
+      {notice.message}
     </div>
   );
 }

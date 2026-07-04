@@ -34,6 +34,7 @@ describe("Open-Meteo weather adapter", () => {
         temperature_2m: 13,
         relative_humidity_2m: 96,
         apparent_temperature: 11.1,
+        is_day: 1,
         weather_code: 2,
         cloud_cover: 72,
         pressure_msl: 1015.4,
@@ -66,6 +67,7 @@ describe("Open-Meteo weather adapter", () => {
       timezone: "America/Los_Angeles",
       condition: "clouds",
       description: "Partly cloudy",
+      isDay: true,
       temperatureC: 13,
       feelsLikeC: 11.1,
       humidity: 96,
@@ -85,10 +87,17 @@ describe("Open-Meteo weather adapter", () => {
       summary: "Foggy visibility",
       precipitationChance: 2,
       temperatureMinC: 12,
-      temperatureMaxC: 21.3,
+      temperatureMaxC: 21.3
+    });
+    expect(report.daily[0].sunMoon).toMatchObject({
       moonrise: null,
-      moonset: null
+      moonset: null,
+      source: "estimated"
     });
     expect(report.daily[1].summary).toBe("Thunderstorm risk");
+    expect(report.metadata).toMatchObject({
+      provider: "Open-Meteo",
+      attribution: "Forecast and geocoding data from Open-Meteo"
+    });
   });
 });

@@ -6,6 +6,28 @@ export type WeatherCondition =
   | "mist"
   | "snow";
 
+export type WeatherProvider = "Open-Meteo";
+
+export type MoonPhaseName =
+  | "New moon"
+  | "Waxing crescent"
+  | "First quarter"
+  | "Waxing gibbous"
+  | "Full moon"
+  | "Waning gibbous"
+  | "Last quarter"
+  | "Waning crescent";
+
+export type SunMoonTiming = {
+  sunrise: string;
+  sunset: string;
+  moonrise: string | null;
+  moonset: string | null;
+  moonPhase: MoonPhaseName;
+  moonIllumination: number;
+  source: "provider" | "estimated";
+};
+
 export type CurrentWeather = {
   locationName: string;
   country: string;
@@ -14,6 +36,7 @@ export type CurrentWeather = {
   condition: WeatherCondition;
   description: string;
   icon: string;
+  isDay: boolean;
   temperatureC: number;
   feelsLikeC: number;
   humidity: number;
@@ -33,13 +56,28 @@ export type DailyForecast = {
   precipitationChance: number;
   temperatureMinC: number;
   temperatureMaxC: number;
-  sunrise: string;
-  sunset: string;
-  moonrise: string | null;
-  moonset: string | null;
+  sunMoon: SunMoonTiming;
+};
+
+export type WeatherReportMetadata = {
+  provider: WeatherProvider;
+  fetchedAt: string;
+  attribution: string;
 };
 
 export type WeatherReport = {
   current: CurrentWeather;
   daily: DailyForecast[];
+  metadata: WeatherReportMetadata;
+};
+
+export type PrecipitationChartPoint = {
+  label: string;
+  value: number;
+};
+
+export type TemperatureChartPoint = {
+  label: string;
+  min: number;
+  max: number;
 };

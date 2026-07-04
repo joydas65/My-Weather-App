@@ -3,6 +3,7 @@ import type {
   WeatherCondition,
   WeatherReport
 } from "@/lib/weather/types";
+import { createSunMoonTiming } from "@/lib/weather/astronomy";
 
 const FORECAST_ENDPOINT = "https://api.open-meteo.com/v1/forecast";
 const GEOCODING_ENDPOINT = "https://geocoding-api.open-meteo.com/v1/search";
@@ -35,6 +36,7 @@ type OpenMeteoCurrent = {
   temperature_2m?: number;
   relative_humidity_2m?: number;
   apparent_temperature?: number;
+  is_day?: number;
   weather_code?: number;
   cloud_cover?: number;
   pressure_msl?: number;
@@ -349,12 +351,12 @@ export function mapOpenMeteoResponse(
         index,
         "daily high temperature"
       ),
-      sunrise: unixToIso(
-        numberAt(daily.sunrise, index, "daily sunrise")
-      ),
-      sunset: unixToIso(numberAt(daily.sunset, index, "daily sunset")),
-      moonrise: null,
-      moonset: null
+      sunMoon: createSunMoonTiming({
+        date: unixToForecastDate(time, utcOffsetSeconds),
+        sunrise: unixToIso(numberAt(daily.sunrise, index, "daily sunrise")),
+        sunset: unixToIso(numberAt(daily.sunset, index, "daily sunset")),
+        source: "estimated"
+      })
     };
   });
 
@@ -367,6 +369,7 @@ export function mapOpenMeteoResponse(
       condition: currentWeather.condition,
       description: currentWeather.description,
       icon: String(current.weather_code ?? ""),
+      isDay: current.is_day === 1,
       temperatureC: requiredNumber(current.temperature_2m, "current temperature"),
       feelsLikeC: requiredNumber(
         current.apparent_temperature,
@@ -385,7 +388,12 @@ export function mapOpenMeteoResponse(
       sunrise: unixToIso(numberAt(daily.sunrise, 0, "current sunrise")),
       sunset: unixToIso(numberAt(daily.sunset, 0, "current sunset"))
     },
-    daily: dailyForecasts
+    daily: dailyForecasts,
+    metadata: {
+      provider: "Open-Meteo",
+      fetchedAt: new Date().toISOString(),
+      attribution: "Forecast and geocoding data from Open-Meteo"
+    }
   };
 }
 

@@ -14,7 +14,7 @@ type SunMoonTableProps = {
 export function SunMoonTable({ daily, timezone }: SunMoonTableProps) {
   return (
     <div className="overflow-x-auto rounded-lg border border-black/5 bg-white/85 shadow-sm shadow-slate-200/70">
-      <table className="min-w-[760px] w-full border-collapse text-left text-sm">
+      <table className="min-w-[900px] w-full border-collapse text-left text-sm">
         <thead className="bg-slate-50 text-slate-500">
           <tr>
             <th className="px-4 py-3 font-semibold">Day</th>
@@ -42,6 +42,12 @@ export function SunMoonTable({ daily, timezone }: SunMoonTableProps) {
                 Moonset
               </span>
             </th>
+            <th className="px-4 py-3 font-semibold">
+              <span className="inline-flex items-center gap-2">
+                <Moon aria-hidden="true" className="h-4 w-4 text-violet-600" />
+                Moon phase
+              </span>
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
@@ -50,13 +56,21 @@ export function SunMoonTable({ daily, timezone }: SunMoonTableProps) {
               <td className="px-4 py-3 font-medium text-slate-950">
                 {formatDayName(day.date)}, {formatDateLabel(day.date)}
               </td>
-              <td className="px-4 py-3">{formatTime(day.sunrise, timezone)}</td>
-              <td className="px-4 py-3">{formatTime(day.sunset, timezone)}</td>
+              <td className="px-4 py-3">{formatTime(day.sunMoon.sunrise, timezone)}</td>
+              <td className="px-4 py-3">{formatTime(day.sunMoon.sunset, timezone)}</td>
               <td className="px-4 py-3">
-                {formatOptionalTime(day.moonrise, timezone)}
+                {formatOptionalTime(day.sunMoon.moonrise, timezone)}
               </td>
               <td className="px-4 py-3">
-                {formatOptionalTime(day.moonset, timezone)}
+                {formatOptionalTime(day.sunMoon.moonset, timezone)}
+              </td>
+              <td className="px-4 py-3">
+                <span className="block font-medium text-slate-950">
+                  {day.sunMoon.moonPhase}
+                </span>
+                <span className="text-xs text-slate-500">
+                  {day.sunMoon.moonIllumination}% illuminated
+                </span>
               </td>
             </tr>
           ))}
