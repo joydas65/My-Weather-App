@@ -10,6 +10,10 @@ const formatterTests = await readFile(join(root, "tests", "formatters.test.ts"),
 const openMeteoTests = await readFile(join(root, "tests", "open-meteo.test.ts"), "utf8");
 const weatherApiTests = await readFile(join(root, "tests", "weather-api.test.ts"), "utf8");
 const chartDataTests = await readFile(join(root, "tests", "chart-data.test.ts"), "utf8");
+const forecastChartTests = await readFile(
+  join(root, "tests", "forecast-chart.test.tsx"),
+  "utf8"
+);
 const astronomyTests = await readFile(join(root, "tests", "astronomy.test.ts"), "utf8");
 const weatherComponentTests = await readFile(
   join(root, "tests", "weather-components.test.tsx"),
@@ -21,6 +25,10 @@ const astronomyHelpers = await readFile(
   "utf8"
 );
 const chartData = await readFile(join(root, "lib", "weather", "chart-data.ts"), "utf8");
+const forecastChart = await readFile(
+  join(root, "components", "weather", "forecast-chart.tsx"),
+  "utf8"
+);
 const weatherApiContract = await readFile(join(root, "lib", "weather", "api.ts"), "utf8");
 const openMeteoAdapter = await readFile(
   join(root, "lib", "weather", "open-meteo.ts"),
@@ -84,6 +92,15 @@ if (
   !scaffoldAudit.includes("empty`, `loading`, `ready`, `geo-blocked`, `api-error`, and `no-results`")
 ) {
   failures.push("Open-Meteo, no-key runtime, moon-data, and UI state strategy are not documented consistently.");
+}
+
+if (
+  !readme.includes("resilient Chart.js forecast visualizations") ||
+  !readme.includes("chart empty/error handling") ||
+  !scaffoldAudit.includes("chart empty and error states") ||
+  !scaffoldAudit.includes("ForecastChart component behavior")
+) {
+  failures.push("Chart.js resilience, empty/error handling, and component behavior expectations are not documented consistently.");
 }
 
 if (readme.includes("OPENWEATHER_API_KEY") || scaffoldAudit.includes("OPENWEATHER_API_KEY")) {
@@ -151,6 +168,18 @@ if (
   !chartData.includes("TemperatureChartPoint")
 ) {
   failures.push("Chart-data builders must return typed chart series points.");
+}
+
+if (
+  !forecastChart.includes("buildForecastChartModel") ||
+  !forecastChart.includes("ForecastChartStatePanel") ||
+  !forecastChart.includes("ForecastChartErrorBoundary") ||
+  !forecastChart.includes("No forecast trend yet") ||
+  !forecastChart.includes("Chart unavailable") ||
+  !forecastChart.includes("interaction") ||
+  !forecastChart.includes("tooltip")
+) {
+  failures.push("ForecastChart must expose a testable model, styled tooltips, responsive interaction, and chart-specific empty/error states.");
 }
 
 if (
@@ -272,6 +301,21 @@ const chartDataCoverage = ["buildPrecipitationSeries", "buildTemperatureSeries"]
 for (const coveredName of chartDataCoverage) {
   if (!chartDataTests.includes(coveredName)) {
     failures.push(`${coveredName} is missing chart-data test coverage.`);
+  }
+}
+
+const forecastChartCoverage = [
+  "ForecastChart",
+  "buildForecastChartModel",
+  "No forecast trend yet",
+  "Chart unavailable",
+  "tooltip",
+  "aria-label"
+];
+
+for (const coveredName of forecastChartCoverage) {
+  if (!forecastChartTests.includes(coveredName)) {
+    failures.push(`${coveredName} is missing forecast chart behavior test coverage.`);
   }
 }
 

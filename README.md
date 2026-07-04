@@ -4,7 +4,7 @@ A weather dashboard scaffolded with Next.js, React, TypeScript, Tailwind CSS, an
 
 ## Current State
 
-The repository now contains a Next.js App Router weather app with a realistic dashboard shell, live weather lookup, typed empty/loading/error states, typed fallback sample data, dynamic weather condition icons, formatter utilities, Chart.js forecast visualizations, and unit tests. Legacy static HTML/CSS/JS files have been retired so the Next.js app is the single active implementation.
+The repository now contains a Next.js App Router weather app with a realistic dashboard shell, live weather lookup, typed empty/loading/error states, typed fallback sample data, dynamic weather condition icons, formatter utilities, resilient Chart.js forecast visualizations, and unit tests. Legacy static HTML/CSS/JS files have been retired so the Next.js app is the single active implementation.
 
 ## Tech Stack
 
@@ -73,13 +73,15 @@ Open-Meteo provides sun timing but not moonrise or moonset in the current adapte
 
 The first screen starts in an empty location state instead of showing demo weather. The dashboard then moves through explicit `empty`, `loading`, `ready`, `geo-blocked`, `api-error`, and `no-results` states. The weather API returns stable error codes: `INVALID_QUERY`, `INVALID_COORDINATES`, `NO_RESULTS`, `GEOCODING_UNAVAILABLE`, and `WEATHER_UNAVAILABLE`.
 
+Forecast charts use Chart.js through `react-chartjs-2` for precipitation probability and min/max temperature trends. The chart surface includes responsive labels, styled tooltips, summary chips, chart empty/error handling, and component behavior tests for ready, empty, and invalid-data states.
+
 ## Project Structure
 
 - `app/` contains Next.js routes, layout, and global styles.
 - `app/api/weather/` contains the server-side weather endpoint used by search and geolocation.
-- `components/weather/` contains dashboard UI pieces, including metric cards, forecast charts, timing tables, notices, and dynamic condition icons.
+- `components/weather/` contains dashboard UI pieces, including metric cards, resilient forecast charts, timing tables, notices, and dynamic condition icons.
 - `lib/weather/` contains typed weather data helpers, API error contracts, chart series builders, sun/moon helpers, the Open-Meteo adapter, and formatters.
-- `tests/` contains unit tests for shared weather logic, chart series, provider mapping, astronomy helpers, and component behavior.
+- `tests/` contains unit tests for shared weather logic, chart series, forecast chart behavior, provider mapping, astronomy helpers, and component behavior.
 - `scripts/audit-consistency.mjs` checks documentation, assets, and test coverage consistency.
 - `public/` contains static assets used by the Next.js app.
 - `vercel.json` pins the Vercel framework preset to Next.js for production deployments.

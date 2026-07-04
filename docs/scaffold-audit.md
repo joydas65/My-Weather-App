@@ -8,7 +8,7 @@ This document records the consistency checks expected from the new scaffold.
 - React with TypeScript
 - Tailwind CSS
 - Chart.js through `react-chartjs-2`
-- Vitest for formatter, weather-adapter, chart-data, astronomy, and component behavior unit tests
+- Vitest for formatter, weather-adapter, chart-data, forecast chart, astronomy, and component behavior unit tests
 
 ## Runtime Configuration
 
@@ -17,6 +17,8 @@ The live weather data layer uses the local `/api/weather` route, which calls Ope
 Open-Meteo is the live forecast source. Sun timing comes from the forecast response, while moonrise and moonset remain nullable because the current adapter does not receive those values. The data layer estimates moon phase and illumination so the timing table stays useful instead of rendering an empty moon section.
 
 The dashboard starts without demo weather and asks the user to search or grant location access. Client UX states are explicit: `empty`, `loading`, `ready`, `geo-blocked`, `api-error`, and `no-results`. The weather route returns stable error codes for validation, no-result, geocoding, and forecast-provider failures.
+
+Forecast charts use Chart.js through `react-chartjs-2` and must keep precipitation probability plus min/max temperature concepts. The chart components own responsive labels, styled tooltips, summary context, chart empty and error states, and renderable fallback UI when data is missing or invalid.
 
 ## Audit Scope
 
@@ -35,6 +37,6 @@ The dashboard starts without demo weather and asks the user to search or grant l
 - Weather formatter utilities are covered by unit tests.
 - Open-Meteo weather-code and response mapping are covered by unit tests.
 - Weather API error-code mapping is covered by unit tests.
-- Chart-data builders, astronomy helpers, and weather component behavior are covered by unit tests.
+- Chart-data builders, ForecastChart component behavior, astronomy helpers, and weather component behavior are covered by unit tests.
 
 Security dependency audits can be added separately once dependencies are installed and locked.
