@@ -8,6 +8,7 @@ const readme = await readFile(join(root, "README.md"), "utf8");
 const scaffoldAudit = await readFile(join(root, "docs", "scaffold-audit.md"), "utf8");
 const formatterTests = await readFile(join(root, "tests", "formatters.test.ts"), "utf8");
 const openMeteoTests = await readFile(join(root, "tests", "open-meteo.test.ts"), "utf8");
+const weatherApiTests = await readFile(join(root, "tests", "weather-api.test.ts"), "utf8");
 const chartDataTests = await readFile(join(root, "tests", "chart-data.test.ts"), "utf8");
 const astronomyTests = await readFile(join(root, "tests", "astronomy.test.ts"), "utf8");
 const weatherComponentTests = await readFile(
@@ -20,6 +21,7 @@ const astronomyHelpers = await readFile(
   "utf8"
 );
 const chartData = await readFile(join(root, "lib", "weather", "chart-data.ts"), "utf8");
+const weatherApiContract = await readFile(join(root, "lib", "weather", "api.ts"), "utf8");
 const openMeteoAdapter = await readFile(
   join(root, "lib", "weather", "open-meteo.ts"),
   "utf8"
@@ -32,6 +34,7 @@ const weatherDashboard = await readFile(
   join(root, "components", "weather", "weather-dashboard.tsx"),
   "utf8"
 );
+const homePage = await readFile(join(root, "app", "page.tsx"), "utf8");
 const conditionIcon = await readFile(
   join(root, "components", "weather", "weather-condition-icon.tsx"),
   "utf8"
@@ -76,9 +79,11 @@ if (
   !scaffoldAudit.includes("Open-Meteo") ||
   !readme.includes("No weather API key is required") ||
   !readme.includes("moon phase and illumination") ||
-  !scaffoldAudit.includes("moon phase and illumination")
+  !scaffoldAudit.includes("moon phase and illumination") ||
+  !readme.includes("empty`, `loading`, `ready`, `geo-blocked`, `api-error`, and `no-results`") ||
+  !scaffoldAudit.includes("empty`, `loading`, `ready`, `geo-blocked`, `api-error`, and `no-results`")
 ) {
-  failures.push("Open-Meteo, no-key runtime, and moon-data strategy are not documented consistently.");
+  failures.push("Open-Meteo, no-key runtime, moon-data, and UI state strategy are not documented consistently.");
 }
 
 if (readme.includes("OPENWEATHER_API_KEY") || scaffoldAudit.includes("OPENWEATHER_API_KEY")) {
@@ -97,6 +102,28 @@ if (
   !weatherApiRoute.includes("fetchWeatherBySearch")
 ) {
   failures.push("The weather API route must use both coordinate and search lookup paths.");
+}
+
+const weatherErrorCodes = [
+  "INVALID_QUERY",
+  "INVALID_COORDINATES",
+  "NO_RESULTS",
+  "GEOCODING_UNAVAILABLE",
+  "WEATHER_UNAVAILABLE"
+];
+
+for (const errorCode of weatherErrorCodes) {
+  if (
+    !weatherApiContract.includes(errorCode) ||
+    !weatherApiTests.includes(errorCode) ||
+    !readme.includes(errorCode)
+  ) {
+    failures.push(`${errorCode} is not represented across API contract, tests, and docs.`);
+  }
+}
+
+if (homePage.includes("sampleWeather")) {
+  failures.push("app/page.tsx should start with the empty dashboard state, not sample weather.");
 }
 
 const requiredTypeNames = [
@@ -135,10 +162,32 @@ if (
 
 if (
   !weatherDashboard.includes("metadata.fetchedAt") ||
+  !weatherDashboard.includes("WEATHER_VIEW_STATES") ||
+  !weatherDashboard.includes("WeatherStatePanel") ||
+  !weatherDashboard.includes("EmptyStatePanel") ||
+  !weatherDashboard.includes("RecoveryPanel") ||
   !weatherDashboard.includes("NoticePanel") ||
   !weatherDashboard.includes("WeatherConditionIcon")
 ) {
-  failures.push("The dashboard must expose last-updated status, notices, and dynamic condition icons.");
+  failures.push("The dashboard must expose last-updated status, typed state panels, notices, and dynamic condition icons.");
+}
+
+const dashboardStates = [
+  "empty",
+  "loading",
+  "ready",
+  "geo-blocked",
+  "api-error",
+  "no-results"
+];
+
+for (const dashboardState of dashboardStates) {
+  if (
+    !weatherDashboard.includes(`"${dashboardState}"`) ||
+    !weatherComponentTests.includes(`"${dashboardState}"`)
+  ) {
+    failures.push(`${dashboardState} is missing dashboard state implementation or component test coverage.`);
+  }
 }
 
 if (
@@ -202,6 +251,19 @@ const openMeteoCoverage = ["mapWeatherCode", "mapOpenMeteoResponse"];
 for (const coveredName of openMeteoCoverage) {
   if (!openMeteoTests.includes(coveredName)) {
     failures.push(`${coveredName} is missing Open-Meteo test coverage.`);
+  }
+}
+
+const weatherApiCoverage = [
+  "WEATHER_ERROR_CODES",
+  "weatherErrorStatus",
+  "createWeatherApiFailure",
+  "isWeatherApiFailure"
+];
+
+for (const coveredName of weatherApiCoverage) {
+  if (!weatherApiTests.includes(coveredName)) {
+    failures.push(`${coveredName} is missing weather API contract test coverage.`);
   }
 }
 

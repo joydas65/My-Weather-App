@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import {
   fetchWeatherByCoordinates,
-  fetchWeatherBySearch,
-  WeatherLookupError
+  fetchWeatherBySearch
 } from "@/lib/weather/open-meteo";
+import {
+  createWeatherApiFailure,
+  WeatherLookupError,
+  weatherErrorStatus,
+  type WeatherErrorCode
+} from "@/lib/weather/api";
 
 export const dynamic = "force-dynamic";
 
@@ -15,8 +20,11 @@ export async function GET(request: Request) {
     if (query) {
       if (query.length < 2) {
         return NextResponse.json(
-          { error: "Enter at least two characters to search." },
-          { status: 400 }
+          createWeatherApiFailure(
+            "INVALID_QUERY",
+            "Enter at least two characters to search."
+          ),
+          { status: weatherErrorStatus.INVALID_QUERY }
         );
       }
 
@@ -37,8 +45,11 @@ export async function GET(request: Request) {
       longitude > 180
     ) {
       return NextResponse.json(
-        { error: "Provide a valid location or coordinates." },
-        { status: 400 }
+        createWeatherApiFailure(
+          "INVALID_COORDINATES",
+          "Provide a valid location or coordinates."
+        ),
+        { status: weatherErrorStatus.INVALID_COORDINATES }
       );
     }
 
@@ -51,13 +62,17 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ weather });
   } catch (error) {
-    const status = error instanceof WeatherLookupError ? error.status : 502;
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Weather data is temporarily unavailable.";
+    const code: WeatherErrorCode =
+      error instanceof WeatherLookupError ? error.code : "WEATHER_UNAVAILABLE";
+    const status =
+      error instanceof WeatherLookupError
+        ? error.status
+        : weatherErrorStatus.WEATHER_UNAVAILABLE;
+    const message = error instanceof Error
+      ? error.message
+      : "Weather data is temporarily unavailable.";
 
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json(createWeatherApiFailure(code, message), { status });
   }
 }
 

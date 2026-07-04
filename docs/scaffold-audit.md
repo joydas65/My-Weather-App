@@ -16,6 +16,8 @@ The live weather data layer uses the local `/api/weather` route, which calls Ope
 
 Open-Meteo is the live forecast source. Sun timing comes from the forecast response, while moonrise and moonset remain nullable because the current adapter does not receive those values. The data layer estimates moon phase and illumination so the timing table stays useful instead of rendering an empty moon section.
 
+The dashboard starts without demo weather and asks the user to search or grant location access. Client UX states are explicit: `empty`, `loading`, `ready`, `geo-blocked`, `api-error`, and `no-results`. The weather route returns stable error codes for validation, no-result, geocoding, and forecast-provider failures.
+
 ## Audit Scope
 
 `pnpm audit` is intentionally not the consistency audit for this project. The local audit script is `pnpm audit:consistency`, which runs `scripts/audit-consistency.mjs` and checks that:
@@ -24,13 +26,15 @@ Open-Meteo is the live forecast source. Sun timing comes from the forecast respo
 - Open-Meteo and the no-key runtime model are documented.
 - The Open-Meteo adapter centralizes forecast and geocoding endpoints.
 - The local weather API route supports both search and coordinate lookup.
+- The weather API exposes stable error codes for invalid input, no results, and provider failures.
 - Weather models include explicit provider metadata, sun/moon timing, and chart series types.
-- The dashboard exposes dynamic condition icons, last-updated status, and typed notice states.
+- The dashboard exposes dynamic condition icons, last-updated status, and typed empty/loading/error/no-result states.
 - Required public assets are present.
 - Vercel deployment configuration pins the framework preset to Next.js.
 - The retired legacy static HTML/CSS/JS files remain absent.
 - Weather formatter utilities are covered by unit tests.
 - Open-Meteo weather-code and response mapping are covered by unit tests.
+- Weather API error-code mapping is covered by unit tests.
 - Chart-data builders, astronomy helpers, and weather component behavior are covered by unit tests.
 
 Security dependency audits can be added separately once dependencies are installed and locked.

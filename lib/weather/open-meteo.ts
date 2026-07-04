@@ -4,6 +4,7 @@ import type {
   WeatherReport
 } from "@/lib/weather/types";
 import { createSunMoonTiming } from "@/lib/weather/astronomy";
+import { WeatherLookupError } from "@/lib/weather/api";
 
 const FORECAST_ENDPOINT = "https://api.open-meteo.com/v1/forecast";
 const GEOCODING_ENDPOINT = "https://geocoding-api.open-meteo.com/v1/search";
@@ -232,16 +233,6 @@ const WEATHER_CODES: Record<number, WeatherCodeMetadata> = {
   }
 };
 
-export class WeatherLookupError extends Error {
-  status: number;
-
-  constructor(message: string, status = 502) {
-    super(message);
-    this.name = "WeatherLookupError";
-    this.status = status;
-  }
-}
-
 export function mapWeatherCode(code: number | undefined): WeatherCodeMetadata {
   if (code === undefined) {
     return {
@@ -272,14 +263,20 @@ export async function fetchWeatherBySearch(query: string) {
   });
 
   if (!response.ok) {
-    throw new WeatherLookupError("Location search is temporarily unavailable.");
+    throw new WeatherLookupError(
+      "GEOCODING_UNAVAILABLE",
+      "Location search is temporarily unavailable."
+    );
   }
 
   const search = (await response.json()) as OpenMeteoSearchResponse;
   const result = search.results?.[0];
 
   if (!result) {
-    throw new WeatherLookupError("No matching location was found.", 404);
+    throw new WeatherLookupError(
+      "NO_RESULTS",
+      "No matching location was found."
+    );
   }
 
   return fetchWeatherByCoordinates({
@@ -308,7 +305,10 @@ export async function fetchWeatherByCoordinates(location: WeatherLocation) {
   });
 
   if (!response.ok) {
-    throw new WeatherLookupError("Weather data is temporarily unavailable.");
+    throw new WeatherLookupError(
+      "WEATHER_UNAVAILABLE",
+      "Weather data is temporarily unavailable."
+    );
   }
 
   const forecast = (await response.json()) as OpenMeteoForecastResponse;
@@ -326,7 +326,10 @@ export function mapOpenMeteoResponse(
   const utcOffsetSeconds = response.utc_offset_seconds ?? 0;
 
   if (!current || !daily?.time?.length) {
-    throw new WeatherLookupError("Weather provider returned an incomplete forecast.");
+    throw new WeatherLookupError(
+      "WEATHER_UNAVAILABLE",
+      "Weather provider returned an incomplete forecast."
+    );
   }
 
   const currentWeather = mapWeatherCode(current.weather_code);
@@ -399,7 +402,10 @@ export function mapOpenMeteoResponse(
 
 function requiredNumber(value: number | undefined, label: string) {
   if (typeof value !== "number" || Number.isNaN(value)) {
-    throw new WeatherLookupError(`Weather provider omitted ${label}.`);
+    throw new WeatherLookupError(
+      "WEATHER_UNAVAILABLE",
+      `Weather provider omitted ${label}.`
+    );
   }
 
   return value;

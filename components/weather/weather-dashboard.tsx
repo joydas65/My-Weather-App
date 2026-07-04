@@ -11,6 +11,7 @@ import {
   LocateFixed,
   LoaderCircle,
   MapPin,
+  RefreshCw,
   Search,
   Sunrise,
   Sunset,
@@ -24,6 +25,11 @@ import { ForecastChart } from "@/components/weather/forecast-chart";
 import { MetricCard } from "@/components/weather/metric-card";
 import { SunMoonTable } from "@/components/weather/sun-moon-table";
 import { WeatherConditionIcon } from "@/components/weather/weather-condition-icon";
+import {
+  isWeatherApiFailure,
+  type WeatherApiResponse,
+  type WeatherErrorCode
+} from "@/lib/weather/api";
 import type { WeatherReport } from "@/lib/weather/types";
 import {
   formatPercent,
@@ -37,7 +43,7 @@ import {
 } from "@/lib/weather/formatters";
 
 type WeatherDashboardProps = {
-  initialWeather: WeatherReport;
+  initialWeather?: WeatherReport;
 };
 
 type LoadingState = {
@@ -45,29 +51,58 @@ type LoadingState = {
   detail: string;
 };
 
-type WeatherApiResponse = {
-  weather?: WeatherReport;
-  error?: string;
-};
-
 type NoticeState = {
   message: string;
   tone: "info" | "success" | "error";
 };
 
-export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
-  const [weather, setWeather] = useState(initialWeather);
-  const [query, setQuery] = useState("");
-  const [loadingState, setLoadingState] = useState<LoadingState | null>(null);
-  const [notice, setNotice] = useState<NoticeState | null>(null);
-  const noticeTimerRef = useRef<number | null>(null);
-  const isLoading = loadingState !== null;
+type WeatherRetry = {
+  endpoint: string;
+  loading: LoadingState;
+};
 
-  const sunStatus = getSunEventStatus(
-    weather.current.observedAt,
-    weather.current.sunrise,
-    weather.current.sunset
+export const WEATHER_VIEW_STATES = [
+  "empty",
+  "loading",
+  "ready",
+  "geo-blocked",
+  "api-error",
+  "no-results"
+] as const;
+
+export type WeatherViewStatus = (typeof WEATHER_VIEW_STATES)[number];
+
+export type WeatherViewState =
+  | { status: "empty" }
+  | { status: "loading"; loading: LoadingState }
+  | { status: "ready"; notice?: NoticeState }
+  | { status: "geo-blocked"; message: string }
+  | {
+      status: "api-error";
+      code: WeatherErrorCode;
+      message: string;
+      retry?: WeatherRetry;
+    }
+  | { status: "no-results"; query: string; message: string };
+
+export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
+  const [weather, setWeather] = useState<WeatherReport | null>(
+    initialWeather ?? null
   );
+  const [query, setQuery] = useState("");
+  const [viewState, setViewState] = useState<WeatherViewState>(
+    initialWeather ? { status: "ready" } : { status: "empty" }
+  );
+  const noticeTimerRef = useRef<number | null>(null);
+  const isLoading = viewState.status === "loading";
+
+  const sunStatus = weather
+    ? getSunEventStatus(
+        weather.current.observedAt,
+        weather.current.sunrise,
+        weather.current.sunset
+      )
+    : null;
 
   function showSettledNotice(
     message: string,
@@ -77,8 +112,14 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
       window.clearTimeout(noticeTimerRef.current);
     }
 
-    setNotice({ message, tone });
-    noticeTimerRef.current = window.setTimeout(() => setNotice(null), 3000);
+    setViewState({ status: "ready", notice: { message, tone } });
+    noticeTimerRef.current = window.setTimeout(() => {
+      setViewState((current) =>
+        current.status === "ready" && current.notice
+          ? { status: "ready" }
+          : current
+      );
+    }, 3000);
   }
 
   async function loadWeather(
@@ -86,15 +127,53 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
     state: LoadingState,
     successMessage: (weatherReport: WeatherReport) => string
   ) {
-    setLoadingState(state);
-    setNotice(null);
+    setViewState({ status: "loading", loading: state });
 
     try {
       const response = await fetch(endpoint, { cache: "no-store" });
-      const payload = (await response.json().catch(() => ({}))) as WeatherApiResponse;
+      const payload = (await response.json().catch(() => ({}))) as
+        | WeatherApiResponse
+        | Record<string, never>;
 
-      if (!response.ok || !payload.weather) {
-        throw new Error(payload.error ?? "Weather data is temporarily unavailable.");
+      if (!response.ok || isWeatherApiFailure(payload)) {
+        const fallback = {
+          code: "WEATHER_UNAVAILABLE" as WeatherErrorCode,
+          message: "Weather data is temporarily unavailable."
+        };
+        const failure = isWeatherApiFailure(payload) ? payload.error : fallback;
+
+        if (failure.code === "NO_RESULTS") {
+          setViewState({
+            status: "no-results",
+            query: query.trim(),
+            message: failure.message
+          });
+          return;
+        }
+
+        setViewState({
+          status: "api-error",
+          code: failure.code,
+          message: failure.message,
+          retry: {
+            endpoint,
+            loading: state
+          }
+        });
+        return;
+      }
+
+      if (!("weather" in payload)) {
+        setViewState({
+          status: "api-error",
+          code: "WEATHER_UNAVAILABLE",
+          message: "Weather data is temporarily unavailable.",
+          retry: {
+            endpoint,
+            loading: state
+          }
+        });
+        return;
       }
 
       setWeather(payload.weather);
@@ -105,9 +184,15 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
         error instanceof Error
           ? error.message
           : "Weather data is temporarily unavailable.";
-      showSettledNotice(message, "error");
-    } finally {
-      setLoadingState(null);
+      setViewState({
+        status: "api-error",
+        code: "WEATHER_UNAVAILABLE",
+        message,
+        retry: {
+          endpoint,
+          loading: state
+        }
+      });
     }
   }
 
@@ -116,7 +201,11 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
     const trimmedQuery = query.trim();
 
     if (!trimmedQuery) {
-      showSettledNotice("Enter a city or ZIP code", "error");
+      setViewState({
+        status: "api-error",
+        code: "INVALID_QUERY",
+        message: "Enter a city or ZIP code to load a forecast."
+      });
       return;
     }
 
@@ -134,15 +223,20 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
 
   function handleUseLocation() {
     if (!navigator.geolocation) {
-      showSettledNotice("Location is unavailable in this browser", "error");
+      setViewState({
+        status: "geo-blocked",
+        message: "This browser does not support location access. Search by city or ZIP code instead."
+      });
       return;
     }
 
-    setLoadingState({
-      title: "Requesting location",
-      detail: "Waiting for your browser to share coordinates."
+    setViewState({
+      status: "loading",
+      loading: {
+        title: "Requesting location",
+        detail: "Waiting for your browser to share coordinates."
+      }
     });
-    setNotice(null);
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -161,8 +255,10 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
         );
       },
       () => {
-        setLoadingState(null);
-        showSettledNotice("Location access blocked or timed out", "error");
+        setViewState({
+          status: "geo-blocked",
+          message: "Location access was blocked or timed out. Search by city or ZIP code to continue."
+        });
       },
       {
         enableHighAccuracy: true,
@@ -171,9 +267,23 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
     );
   }
 
-  const location = [weather.current.locationName, weather.current.country]
-    .filter(Boolean)
-    .join(", ");
+  function retryWeather() {
+    if (viewState.status !== "api-error" || !viewState.retry) {
+      return;
+    }
+
+    void loadWeather(
+      viewState.retry.endpoint,
+      viewState.retry.loading,
+      () => "Forecast updated"
+    );
+  }
+
+  const location = weather
+    ? [weather.current.locationName, weather.current.country]
+        .filter(Boolean)
+        .join(", ")
+    : "No location selected";
 
   return (
     <main className="min-h-screen">
@@ -185,17 +295,19 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
               {location}
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950 sm:text-4xl">
-              {weather.current.description}
+              {weather ? weather.current.description : "Choose a location"}
             </h1>
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
-              <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 ring-1 ring-slate-100">
-                <Clock3 aria-hidden="true" className="h-3.5 w-3.5" />
-                Updated {formatTime(weather.metadata.fetchedAt, weather.current.timezone)}
-              </span>
-              <span className="rounded-lg bg-slate-50 px-2.5 py-1 ring-1 ring-slate-100">
-                {weather.metadata.provider}
-              </span>
-            </div>
+            {weather ? (
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
+                <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 ring-1 ring-slate-100">
+                  <Clock3 aria-hidden="true" className="h-3.5 w-3.5" />
+                  Updated {formatTime(weather.metadata.fetchedAt, weather.current.timezone)}
+                </span>
+                <span className="rounded-lg bg-slate-50 px-2.5 py-1 ring-1 ring-slate-100">
+                  {weather.metadata.provider}
+                </span>
+              </div>
+            ) : null}
           </div>
           <form
             className="flex w-full flex-col gap-2 sm:flex-row lg:max-w-xl"
@@ -245,16 +357,39 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
           </form>
         </header>
 
-        {loadingState ? (
-          <WeatherLoadingPanel state={loadingState} />
-        ) : notice ? (
-          <NoticePanel notice={notice} />
-        ) : null}
+        <WeatherStatePanel
+          onRetry={retryWeather}
+          onUseLocation={handleUseLocation}
+          state={viewState}
+        />
 
-        <section
-          aria-busy={isLoading}
-          className="grid gap-4 transition-opacity lg:grid-cols-[1.1fr_1.9fr]"
-        >
+        {weather && sunStatus ? (
+          <WeatherReportSections
+            isLoading={isLoading}
+            sunStatus={sunStatus}
+            weather={weather}
+          />
+        ) : null}
+      </section>
+    </main>
+  );
+}
+
+function WeatherReportSections({
+  isLoading,
+  sunStatus,
+  weather
+}: {
+  isLoading: boolean;
+  sunStatus: { sunrise: string; sunset: string };
+  weather: WeatherReport;
+}) {
+  return (
+    <>
+      <section
+        aria-busy={isLoading}
+        className="grid gap-4 transition-opacity lg:grid-cols-[1.1fr_1.9fr]"
+      >
           <article className="rounded-lg border border-black/5 bg-slate-950 p-5 text-white shadow-sm shadow-slate-300/80">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -393,12 +528,92 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
             timezone={weather.current.timezone}
           />
         </section>
-      </section>
-    </main>
+    </>
   );
 }
 
-function WeatherLoadingPanel({ state }: { state: LoadingState }) {
+export function WeatherStatePanel({
+  onRetry,
+  onUseLocation,
+  state
+}: {
+  onRetry?: () => void;
+  onUseLocation?: () => void;
+  state: WeatherViewState;
+}) {
+  if (state.status === "empty") {
+    return <EmptyStatePanel onUseLocation={onUseLocation} />;
+  }
+
+  if (state.status === "loading") {
+    return <WeatherLoadingPanel state={state.loading} />;
+  }
+
+  if (state.status === "ready" && state.notice) {
+    return <NoticePanel notice={state.notice} />;
+  }
+
+  if (state.status === "geo-blocked") {
+    return (
+      <RecoveryPanel
+        message={state.message}
+        title="Location access blocked"
+        tone="warning"
+      />
+    );
+  }
+
+  if (state.status === "no-results") {
+    return (
+      <RecoveryPanel
+        message={state.message}
+        title={`No results for "${state.query}"`}
+        tone="warning"
+      />
+    );
+  }
+
+  if (state.status === "api-error") {
+    return (
+      <RecoveryPanel
+        message={state.message}
+        onRetry={state.retry ? onRetry : undefined}
+        title="Weather service unavailable"
+        tone="error"
+      />
+    );
+  }
+
+  return null;
+}
+
+export function EmptyStatePanel({ onUseLocation }: { onUseLocation?: () => void }) {
+  return (
+    <section className="rounded-lg border border-dashed border-cyan-200 bg-white/80 p-5 shadow-sm shadow-slate-200/70">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="max-w-2xl">
+          <p className="text-sm font-medium text-cyan-700">Ready for local weather</p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950">
+            Search a city or use your current location
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            The dashboard will load current conditions, metrics, forecasts, and sun timing once a location is selected.
+          </p>
+        </div>
+        <button
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 font-semibold text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+          onClick={onUseLocation}
+          type="button"
+        >
+          <LocateFixed aria-hidden="true" className="h-5 w-5" />
+          Use location
+        </button>
+      </div>
+    </section>
+  );
+}
+
+export function WeatherLoadingPanel({ state }: { state: LoadingState }) {
   return (
     <div
       aria-live="polite"
@@ -418,6 +633,51 @@ function WeatherLoadingPanel({ state }: { state: LoadingState }) {
         </div>
       </div>
     </div>
+  );
+}
+
+export function RecoveryPanel({
+  message,
+  onRetry,
+  title,
+  tone
+}: {
+  message: string;
+  onRetry?: () => void;
+  title: string;
+  tone: "error" | "warning";
+}) {
+  const toneClasses =
+    tone === "error"
+      ? "border-rose-100 bg-rose-50 text-rose-900"
+      : "border-amber-100 bg-amber-50 text-amber-900";
+
+  return (
+    <section
+      aria-live={tone === "error" ? "assertive" : "polite"}
+      className={`rounded-lg border px-4 py-4 shadow-sm shadow-slate-200/70 ${toneClasses}`}
+      role={tone === "error" ? "alert" : "status"}
+    >
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex gap-3">
+          <AlertCircle aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
+          <div>
+            <p className="font-semibold">{title}</p>
+            <p className="mt-1 text-sm opacity-85">{message}</p>
+          </div>
+        </div>
+        {onRetry ? (
+          <button
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-white/80 px-3 text-sm font-semibold text-slate-900 ring-1 ring-black/10 transition hover:bg-white focus:outline-none focus:ring-4 focus:ring-white/70"
+            onClick={onRetry}
+            type="button"
+          >
+            <RefreshCw aria-hidden="true" className="h-4 w-4" />
+            Retry
+          </button>
+        ) : null}
+      </div>
+    </section>
   );
 }
 
