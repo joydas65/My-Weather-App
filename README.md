@@ -4,7 +4,7 @@ A weather dashboard scaffolded with Next.js, React, TypeScript, Tailwind CSS, an
 
 ## Current State
 
-The repository now contains a Next.js App Router scaffold with a realistic dashboard shell, typed sample weather data, formatter utilities, Chart.js forecast visualizations, and unit tests. Legacy static HTML/CSS/JS files have been retired so the Next.js app is the single active implementation.
+The repository now contains a Next.js App Router weather app with a realistic dashboard shell, live weather lookup, typed fallback sample data, formatter utilities, Chart.js forecast visualizations, and unit tests. Legacy static HTML/CSS/JS files have been retired so the Next.js app is the single active implementation.
 
 ## Tech Stack
 
@@ -67,19 +67,14 @@ pnpm check
 
 ## Environment
 
-Live weather integration will use a server-side environment variable:
-
-```bash
-OPENWEATHER_API_KEY=your_api_key_here
-```
-
-Do not expose this key through client components or browser JavaScript.
+No weather API key is required for the current live weather flow. Browser search and geolocation call the local `/api/weather` route, which fetches forecast and geocoding data from Open-Meteo on the server side.
 
 ## Project Structure
 
 - `app/` contains Next.js routes, layout, and global styles.
+- `app/api/weather/` contains the server-side weather endpoint used by search and geolocation.
 - `components/weather/` contains dashboard UI pieces.
-- `lib/weather/` contains typed weather data helpers and formatters.
+- `lib/weather/` contains typed weather data helpers, the Open-Meteo adapter, and formatters.
 - `tests/` contains unit tests for shared weather logic.
 - `scripts/audit-consistency.mjs` checks documentation, assets, and test coverage consistency.
 - `public/` contains static assets used by the Next.js app.
@@ -87,7 +82,7 @@ Do not expose this key through client components or browser JavaScript.
 
 ## Migration Notes
 
-The original static app used direct browser geolocation, OpenWeather requests from client-side JavaScript, Bootstrap, and global DOM mutation. Its root HTML files, `css/index.css`, and `js/index.js` have been removed. The new scaffold shifts toward typed React state, server-side API boundaries, Tailwind styling, and testable utilities.
+The original static app used direct browser geolocation, OpenWeather requests from client-side JavaScript, Bootstrap, and global DOM mutation. Its root HTML files, `css/index.css`, and `js/index.js` have been removed. The new scaffold shifts toward typed React state, a server-side Open-Meteo API boundary, Tailwind styling, and testable utilities.
 
 ## Deployment
 

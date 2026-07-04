@@ -29,3 +29,25 @@ button,
 input {
   font: inherit;
 }
+
+.weather-loader-bar {
+  animation: weather-progress 1.4s ease-in-out infinite;
+  transform: translateX(-100%);
+  width: 45%;
+}
+
+@keyframes weather-progress {
+  0% {
+    transform: translateX(-110%);
+    width: 35%;
+  }
+
+  55% {
+    width: 65%;
+  }
+
+  100% {
+    transform: translateX(240%);
+    width: 35%;
+  }
+}

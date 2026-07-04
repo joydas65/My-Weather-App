@@ -52,12 +52,20 @@ export function SunMoonTable({ daily, timezone }: SunMoonTableProps) {
               </td>
               <td className="px-4 py-3">{formatTime(day.sunrise, timezone)}</td>
               <td className="px-4 py-3">{formatTime(day.sunset, timezone)}</td>
-              <td className="px-4 py-3">{formatTime(day.moonrise, timezone)}</td>
-              <td className="px-4 py-3">{formatTime(day.moonset, timezone)}</td>
+              <td className="px-4 py-3">
+                {formatOptionalTime(day.moonrise, timezone)}
+              </td>
+              <td className="px-4 py-3">
+                {formatOptionalTime(day.moonset, timezone)}
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
   );
+}
+
+function formatOptionalTime(value: string | null, timezone: string) {
+  return value ? formatTime(value, timezone) : "Not available";
 }

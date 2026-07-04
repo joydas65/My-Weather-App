@@ -7,6 +7,15 @@ const packageJson = JSON.parse(await readFile(join(root, "package.json"), "utf8"
 const readme = await readFile(join(root, "README.md"), "utf8");
 const scaffoldAudit = await readFile(join(root, "docs", "scaffold-audit.md"), "utf8");
 const formatterTests = await readFile(join(root, "tests", "formatters.test.ts"), "utf8");
+const openMeteoTests = await readFile(join(root, "tests", "open-meteo.test.ts"), "utf8");
+const openMeteoAdapter = await readFile(
+  join(root, "lib", "weather", "open-meteo.ts"),
+  "utf8"
+);
+const weatherApiRoute = await readFile(
+  join(root, "app", "api", "weather", "route.ts"),
+  "utf8"
+);
 const vercelConfig = JSON.parse(await readFile(join(root, "vercel.json"), "utf8"));
 
 const requiredScripts = [
@@ -18,7 +27,6 @@ const requiredScripts = [
   "audit:consistency",
   "check"
 ];
-const requiredEnvVars = ["OPENWEATHER_API_KEY"];
 const requiredPublicAssets = ["barometer.png", "spinner.gif", "loading.gif"];
 const retiredLegacyFiles = [
   "index.html",
@@ -39,10 +47,30 @@ for (const script of requiredScripts) {
   }
 }
 
-for (const envVar of requiredEnvVars) {
-  if (!readme.includes(envVar) || !scaffoldAudit.includes(envVar)) {
-    failures.push(`${envVar} is not documented consistently.`);
-  }
+if (
+  !readme.includes("Open-Meteo") ||
+  !scaffoldAudit.includes("Open-Meteo") ||
+  !readme.includes("No weather API key is required")
+) {
+  failures.push("Open-Meteo and its no-key runtime model are not documented consistently.");
+}
+
+if (readme.includes("OPENWEATHER_API_KEY") || scaffoldAudit.includes("OPENWEATHER_API_KEY")) {
+  failures.push("OpenWeather environment key documentation should remain retired.");
+}
+
+if (
+  !openMeteoAdapter.includes("https://api.open-meteo.com/v1/forecast") ||
+  !openMeteoAdapter.includes("https://geocoding-api.open-meteo.com/v1/search")
+) {
+  failures.push("Open-Meteo forecast and geocoding endpoints are not centralized in the adapter.");
+}
+
+if (
+  !weatherApiRoute.includes("fetchWeatherByCoordinates") ||
+  !weatherApiRoute.includes("fetchWeatherBySearch")
+) {
+  failures.push("The weather API route must use both coordinate and search lookup paths.");
 }
 
 if (vercelConfig.framework !== "nextjs") {
@@ -90,6 +118,14 @@ const formatterNames = [
 for (const formatterName of formatterNames) {
   if (!formatterTests.includes(formatterName)) {
     failures.push(`${formatterName} is missing formatter test coverage.`);
+  }
+}
+
+const openMeteoCoverage = ["mapWeatherCode", "mapOpenMeteoResponse"];
+
+for (const coveredName of openMeteoCoverage) {
+  if (!openMeteoTests.includes(coveredName)) {
+    failures.push(`${coveredName} is missing Open-Meteo test coverage.`);
   }
 }
 

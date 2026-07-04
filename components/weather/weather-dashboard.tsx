@@ -7,6 +7,7 @@ import {
   Eye,
   Gauge,
   LocateFixed,
+  LoaderCircle,
   MapPin,
   Search,
   Sunrise,
@@ -36,11 +37,22 @@ type WeatherDashboardProps = {
   initialWeather: WeatherReport;
 };
 
+type LoadingState = {
+  title: string;
+  detail: string;
+};
+
+type WeatherApiResponse = {
+  weather?: WeatherReport;
+  error?: string;
+};
+
 export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
   const [weather, setWeather] = useState(initialWeather);
   const [query, setQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingState, setLoadingState] = useState<LoadingState | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const isLoading = loadingState !== null;
 
   const sunStatus = getSunEventStatus(
     weather.current.observedAt,
@@ -53,6 +65,36 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
     window.setTimeout(() => setNotice(null), 2600);
   }
 
+  async function loadWeather(
+    endpoint: string,
+    state: LoadingState,
+    successMessage: (weatherReport: WeatherReport) => string
+  ) {
+    setLoadingState(state);
+    setNotice(null);
+
+    try {
+      const response = await fetch(endpoint, { cache: "no-store" });
+      const payload = (await response.json().catch(() => ({}))) as WeatherApiResponse;
+
+      if (!response.ok || !payload.weather) {
+        throw new Error(payload.error ?? "Weather data is temporarily unavailable.");
+      }
+
+      setWeather(payload.weather);
+      setQuery("");
+      showSettledNotice(successMessage(payload.weather));
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Weather data is temporarily unavailable.";
+      showSettledNotice(message);
+    } finally {
+      setLoadingState(null);
+    }
+  }
+
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedQuery = query.trim();
@@ -62,19 +104,16 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
       return;
     }
 
-    setIsLoading(true);
-    window.setTimeout(() => {
-      setWeather((current) => ({
-        ...current,
-        current: {
-          ...current.current,
-          locationName: trimmedQuery,
-          country: ""
-        }
-      }));
-      setIsLoading(false);
-      showSettledNotice(`Showing ${trimmedQuery}`);
-    }, 450);
+    const params = new URLSearchParams({ q: trimmedQuery });
+
+    void loadWeather(
+      `/api/weather?${params.toString()}`,
+      {
+        title: "Finding forecast",
+        detail: "Resolving the location and loading current conditions."
+      },
+      (updatedWeather) => `Showing ${updatedWeather.current.locationName}`
+    );
   }
 
   function handleUseLocation() {
@@ -83,22 +122,30 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
       return;
     }
 
-    setIsLoading(true);
+    setLoadingState({
+      title: "Requesting location",
+      detail: "Waiting for your browser to share coordinates."
+    });
+    setNotice(null);
+
     navigator.geolocation.getCurrentPosition(
-      () => {
-        setWeather((current) => ({
-          ...current,
-          current: {
-            ...current.current,
-            locationName: "Current location",
-            country: ""
-          }
-        }));
-        setIsLoading(false);
-        showSettledNotice("Location updated");
+      (position) => {
+        const params = new URLSearchParams({
+          lat: String(position.coords.latitude),
+          lon: String(position.coords.longitude)
+        });
+
+        void loadWeather(
+          `/api/weather?${params.toString()}`,
+          {
+            title: "Loading local weather",
+            detail: "Fetching current conditions and the 8-day outlook."
+          },
+          () => "Location weather updated"
+        );
       },
       () => {
-        setIsLoading(false);
+        setLoadingState(null);
         showSettledNotice("Location access blocked");
       },
       {
@@ -139,6 +186,7 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
               />
               <input
                 className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-slate-950 outline-none transition focus:border-cyan-600 focus:ring-4 focus:ring-cyan-100"
+                disabled={isLoading}
                 id="weather-search"
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="City or ZIP code"
@@ -152,7 +200,11 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
               title="Search"
               type="submit"
             >
-              <Search aria-hidden="true" className="h-5 w-5" />
+              {isLoading ? (
+                <LoaderCircle aria-hidden="true" className="h-5 w-5 animate-spin" />
+              ) : (
+                <Search aria-hidden="true" className="h-5 w-5" />
+              )}
               Search
             </button>
             <button
@@ -168,13 +220,18 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
           </form>
         </header>
 
-        {notice ? (
+        {loadingState ? (
+          <WeatherLoadingPanel state={loadingState} />
+        ) : notice ? (
           <div className="rounded-lg border border-cyan-100 bg-cyan-50 px-4 py-3 text-sm font-medium text-cyan-800">
             {notice}
           </div>
         ) : null}
 
-        <section className="grid gap-4 lg:grid-cols-[1.1fr_1.9fr]">
+        <section
+          aria-busy={isLoading}
+          className="grid gap-4 transition-opacity lg:grid-cols-[1.1fr_1.9fr]"
+        >
           <article className="rounded-lg border border-black/5 bg-slate-950 p-5 text-white shadow-sm shadow-slate-300/80">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -314,5 +371,28 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
         </section>
       </section>
     </main>
+  );
+}
+
+function WeatherLoadingPanel({ state }: { state: LoadingState }) {
+  return (
+    <div
+      aria-live="polite"
+      className="rounded-lg border border-cyan-100 bg-white/90 px-4 py-3 shadow-sm shadow-slate-200/70"
+      role="status"
+    >
+      <div className="flex items-center gap-3">
+        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-50 text-cyan-700 ring-1 ring-cyan-100">
+          <LoaderCircle aria-hidden="true" className="h-5 w-5 animate-spin" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-slate-950">{state.title}</p>
+          <p className="text-sm text-slate-500">{state.detail}</p>
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
+            <div className="weather-loader-bar h-full rounded-full bg-cyan-600" />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

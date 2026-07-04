@@ -8,21 +8,24 @@ This document records the consistency checks expected from the new scaffold.
 - React with TypeScript
 - Tailwind CSS
 - Chart.js through `react-chartjs-2`
-- Vitest for formatter-level unit tests
+- Vitest for formatter and weather-adapter unit tests
 
 ## Runtime Configuration
 
-The future live weather data layer must read `OPENWEATHER_API_KEY` from server-side environment variables. The key must not be exposed to client components.
+The live weather data layer uses the local `/api/weather` route, which calls Open-Meteo forecast and geocoding endpoints from the server side. No weather API key is required for this implementation.
 
 ## Audit Scope
 
 `pnpm audit` is intentionally not the consistency audit for this project. The local audit script is `pnpm audit:consistency`, which runs `scripts/audit-consistency.mjs` and checks that:
 
 - README scripts match `package.json`.
-- `OPENWEATHER_API_KEY` appears in scaffold documentation.
+- Open-Meteo and the no-key runtime model are documented.
+- The Open-Meteo adapter centralizes forecast and geocoding endpoints.
+- The local weather API route supports both search and coordinate lookup.
 - Required public assets are present.
 - Vercel deployment configuration pins the framework preset to Next.js.
 - The retired legacy static HTML/CSS/JS files remain absent.
 - Weather formatter utilities are covered by unit tests.
+- Open-Meteo weather-code and response mapping are covered by unit tests.
 
 Security dependency audits can be added separately once dependencies are installed and locked.

@@ -1,4 +1,10 @@
-export type WeatherCondition = "clear" | "clouds" | "rain" | "storm" | "mist";
+export type WeatherCondition =
+  | "clear"
+  | "clouds"
+  | "rain"
+  | "storm"
+  | "mist"
+  | "snow";
 
 export type CurrentWeather = {
   locationName: string;
@@ -29,8 +35,8 @@ export type DailyForecast = {
   temperatureMaxC: number;
   sunrise: string;
   sunset: string;
-  moonrise: string;
-  moonset: string;
+  moonrise: string | null;
+  moonset: string | null;
 };
 
 export type WeatherReport = {
