@@ -27,6 +27,10 @@ const weatherComponentTests = await readFile(
   join(root, "tests", "weather-components.test.tsx"),
   "utf8"
 );
+const decisionSupportTests = await readFile(
+  join(root, "tests", "decision-support.test.ts"),
+  "utf8"
+);
 const weatherTypes = await readFile(join(root, "lib", "weather", "types.ts"), "utf8");
 const weatherPreferences = await readFile(
   join(root, "lib", "weather", "preferences.ts"),
@@ -37,8 +41,24 @@ const astronomyHelpers = await readFile(
   "utf8"
 );
 const chartData = await readFile(join(root, "lib", "weather", "chart-data.ts"), "utf8");
+const decisionSupport = await readFile(
+  join(root, "lib", "weather", "decision-support.ts"),
+  "utf8"
+);
 const forecastChart = await readFile(
   join(root, "components", "weather", "forecast-chart.tsx"),
+  "utf8"
+);
+const hourlyTimeline = await readFile(
+  join(root, "components", "weather", "hourly-timeline.tsx"),
+  "utf8"
+);
+const smartInsights = await readFile(
+  join(root, "components", "weather", "smart-insights.tsx"),
+  "utf8"
+);
+const tomorrowBrief = await readFile(
+  join(root, "components", "weather", "tomorrow-brief.tsx"),
   "utf8"
 );
 const weatherApiContract = await readFile(join(root, "lib", "weather", "api.ts"), "utf8");
@@ -151,15 +171,30 @@ if (
   failures.push("The hamburger menu, location, unit preference, and local persistence expectations are not documented consistently.");
 }
 
+if (
+  !readme.includes("Tomorrow brief") ||
+  !readme.includes("Hourly timeline") ||
+  !readme.includes("Smart insights") ||
+  !readme.includes("decision-support") ||
+  !scaffoldAudit.includes("Tomorrow brief") ||
+  !scaffoldAudit.includes("Hourly timeline") ||
+  !scaffoldAudit.includes("Smart insights") ||
+  !scaffoldAudit.includes("decision-support")
+) {
+  failures.push("Tomorrow brief, hourly timeline, smart insights, and decision-support expectations are not documented consistently.");
+}
+
 if (readme.includes("OPENWEATHER_API_KEY") || scaffoldAudit.includes("OPENWEATHER_API_KEY")) {
   failures.push("OpenWeather environment key documentation should remain retired.");
 }
 
 if (
   !openMeteoAdapter.includes("https://api.open-meteo.com/v1/forecast") ||
-  !openMeteoAdapter.includes("https://geocoding-api.open-meteo.com/v1/search")
+  !openMeteoAdapter.includes("https://geocoding-api.open-meteo.com/v1/search") ||
+  !openMeteoAdapter.includes("HOURLY_VARIABLES") ||
+  !openMeteoAdapter.includes("precipitation_probability")
 ) {
-  failures.push("Open-Meteo forecast and geocoding endpoints are not centralized in the adapter.");
+  failures.push("Open-Meteo forecast, geocoding, and hourly timeline inputs are not centralized in the adapter.");
 }
 
 if (
@@ -192,8 +227,11 @@ if (homePage.includes("sampleWeather") || weatherDashboard.includes("sampleWeath
 }
 
 const requiredTypeNames = [
+  "HourlyForecast",
   "SunMoonTiming",
+  "TomorrowBrief",
   "WeatherReportMetadata",
+  "WeatherInsight",
   "PrecipitationChartPoint",
   "TemperatureChartPoint"
 ];
@@ -219,6 +257,15 @@ if (
 }
 
 if (
+  !decisionSupport.includes("buildTomorrowBrief") ||
+  !decisionSupport.includes("buildWeatherInsights") ||
+  !decisionSupport.includes("selectNextHourlyForecast") ||
+  !decisionSupport.includes("findBestWeatherWindow")
+) {
+  failures.push("Decision-support helpers must centralize tomorrow brief, hourly selection, smart insights, and best-window behavior.");
+}
+
+if (
   !forecastChart.includes("buildForecastChartModel") ||
   !forecastChart.includes("ForecastChartStatePanel") ||
   !forecastChart.includes("ForecastChartErrorBoundary") ||
@@ -238,6 +285,17 @@ if (
 }
 
 if (
+  !tomorrowBrief.includes("Tomorrow brief") ||
+  !tomorrowBrief.includes("Best window") ||
+  !hourlyTimeline.includes("Hourly timeline") ||
+  !hourlyTimeline.includes("Next 24 hours") ||
+  !smartInsights.includes("Smart insights") ||
+  !smartInsights.includes("Planning signals")
+) {
+  failures.push("Tomorrow brief, hourly timeline, and smart insight components must expose the expected planning surfaces.");
+}
+
+if (
   !weatherDashboard.includes("metadata.fetchedAt") ||
   !weatherDashboard.includes("WEATHER_VIEW_STATES") ||
   !weatherDashboard.includes("WeatherStatePanel") ||
@@ -246,6 +304,9 @@ if (
   !weatherDashboard.includes("NoticePanel") ||
   !weatherDashboard.includes("WeatherConditionIcon") ||
   !weatherDashboard.includes("WeatherMenuDrawer") ||
+  !weatherDashboard.includes("TomorrowBriefCard") ||
+  !weatherDashboard.includes("HourlyTimeline") ||
+  !weatherDashboard.includes("SmartInsights") ||
   !weatherDashboard.includes("lastRequest") ||
   !weatherDashboard.includes("refreshWeather") ||
   !weatherDashboard.includes("readWeatherMenuPreferences") ||
@@ -275,6 +336,8 @@ if (
   !weatherMenu.includes("Temperature") ||
   !weatherMenu.includes("Measurement preferences") ||
   !weatherMenu.includes("Refresh weather") ||
+  !weatherMenu.includes("#smart-forecast") ||
+  !weatherMenu.includes("#hourly-timeline") ||
   !weatherMenu.includes("#forecast-charts") ||
   !weatherMenu.includes("#daily-outlook") ||
   !weatherMenu.includes("#sun-moon")
@@ -321,11 +384,15 @@ if (
   !weatherDashboard.includes("lg:flex-row") ||
   !weatherDashboard.includes("lg:grid-cols") ||
   !weatherDashboard.includes("xl:grid-cols") ||
+  !weatherDashboard.includes('id="smart-forecast"') ||
+  !weatherDashboard.includes('id="hourly-timeline"') ||
   !weatherDashboard.includes("grid min-w-0 gap-4 xl:grid-cols-2") ||
   !forecastChart.includes("min-w-0 space-y-3") ||
-  !forecastChart.includes("h-72 min-w-0 w-full")
+  !forecastChart.includes("h-72 min-w-0 w-full") ||
+  !hourlyTimeline.includes("overflow-x-auto") ||
+  !hourlyTimeline.includes('data-testid="hourly-timeline-scroll"')
 ) {
-  failures.push("The dashboard and forecast charts must keep mobile-first responsive layout classes that prevent narrow-phone overflow.");
+  failures.push("The dashboard, forecast charts, and hourly timeline must keep mobile-first responsive layout classes that prevent narrow-phone overflow.");
 }
 
 if (
@@ -428,7 +495,7 @@ for (const coveredName of menuPreferenceCoverage) {
   }
 }
 
-const openMeteoCoverage = ["mapWeatherCode", "mapOpenMeteoResponse"];
+const openMeteoCoverage = ["mapWeatherCode", "mapOpenMeteoResponse", "hourly"];
 
 for (const coveredName of openMeteoCoverage) {
   if (!openMeteoTests.includes(coveredName)) {
@@ -454,6 +521,20 @@ const chartDataCoverage = ["buildPrecipitationSeries", "buildTemperatureSeries"]
 for (const coveredName of chartDataCoverage) {
   if (!chartDataTests.includes(coveredName)) {
     failures.push(`${coveredName} is missing chart-data test coverage.`);
+  }
+}
+
+const decisionSupportCoverage = [
+  "buildTomorrowBrief",
+  "buildWeatherInsights",
+  "selectNextHourlyForecast",
+  "Umbrella window",
+  "Best outdoor window"
+];
+
+for (const coveredName of decisionSupportCoverage) {
+  if (!decisionSupportTests.includes(coveredName)) {
+    failures.push(`${coveredName} is missing decision-support test coverage.`);
   }
 }
 
@@ -485,7 +566,10 @@ const componentCoverage = [
   "WeatherConditionIcon",
   "getWeatherConditionPresentation",
   "SunMoonTable",
-  "WeatherMenuDrawer"
+  "WeatherMenuDrawer",
+  "TomorrowBriefCard",
+  "HourlyTimeline",
+  "SmartInsights"
 ];
 
 for (const coveredName of componentCoverage) {
@@ -501,6 +585,7 @@ const uxStructureCoverage = [
   "hamburger menu",
   "WEATHER_MENU_PREFERENCES_KEY",
   "forecast chart cards",
+  "planning sections",
   "mobile-friendly sun and moon"
 ];
 

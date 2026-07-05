@@ -23,8 +23,11 @@ import {
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { DailyForecast } from "@/components/weather/daily-forecast";
 import { ForecastChart } from "@/components/weather/forecast-chart";
+import { HourlyTimeline } from "@/components/weather/hourly-timeline";
 import { MetricCard } from "@/components/weather/metric-card";
+import { SmartInsights } from "@/components/weather/smart-insights";
 import { SunMoonTable } from "@/components/weather/sun-moon-table";
+import { TomorrowBriefCard } from "@/components/weather/tomorrow-brief";
 import { WeatherConditionIcon } from "@/components/weather/weather-condition-icon";
 import { WeatherMenuDrawer } from "@/components/weather/weather-menu";
 import {
@@ -627,6 +630,18 @@ function WeatherReportSections({
               value={formatPercent(weather.current.cloudCover)}
             />
           </div>
+        </section>
+
+        <section
+          className="grid scroll-mt-4 gap-4 xl:grid-cols-[1.05fr_0.95fr]"
+          id="smart-forecast"
+        >
+          <TomorrowBriefCard units={units} weather={weather} />
+          <SmartInsights units={units} weather={weather} />
+        </section>
+
+        <section className="scroll-mt-4" id="hourly-timeline">
+          <HourlyTimeline units={units} weather={weather} />
         </section>
 
         <section className="grid min-w-0 gap-4 xl:grid-cols-2 scroll-mt-4" id="forecast-charts">
