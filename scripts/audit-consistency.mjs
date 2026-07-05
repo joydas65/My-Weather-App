@@ -18,6 +18,10 @@ const menuPreferenceTests = await readFile(
   join(root, "tests", "menu-preferences.test.ts"),
   "utf8"
 );
+const offlineCacheTests = await readFile(
+  join(root, "tests", "offline-cache.test.ts"),
+  "utf8"
+);
 const uxStructureTests = await readFile(
   join(root, "tests", "ux-structure.test.ts"),
   "utf8"
@@ -38,6 +42,10 @@ const riskSignalTests = await readFile(
 const weatherTypes = await readFile(join(root, "lib", "weather", "types.ts"), "utf8");
 const weatherPreferences = await readFile(
   join(root, "lib", "weather", "preferences.ts"),
+  "utf8"
+);
+const offlineCache = await readFile(
+  join(root, "lib", "weather", "offline-cache.ts"),
   "utf8"
 );
 const astronomyHelpers = await readFile(
@@ -86,11 +94,23 @@ const weatherDashboard = await readFile(
   join(root, "components", "weather", "weather-dashboard.tsx"),
   "utf8"
 );
+const pwaRegister = await readFile(
+  join(root, "components", "pwa", "pwa-register.tsx"),
+  "utf8"
+);
 const weatherMenu = await readFile(
   join(root, "components", "weather", "weather-menu.tsx"),
   "utf8"
 );
 const homePage = await readFile(join(root, "app", "page.tsx"), "utf8");
+const appLayout = await readFile(join(root, "app", "layout.tsx"), "utf8");
+const webManifest = await readFile(join(root, "public", "manifest.webmanifest"), "utf8");
+const serviceWorker = await readFile(join(root, "public", "sw.js"), "utf8");
+const pwaIcon = await readFile(join(root, "public", "icons", "weather-icon.svg"), "utf8");
+const pwaMaskableIcon = await readFile(
+  join(root, "public", "icons", "weather-maskable.svg"),
+  "utf8"
+);
 const conditionIcon = await readFile(
   join(root, "components", "weather", "weather-condition-icon.tsx"),
   "utf8"
@@ -205,6 +225,21 @@ if (
   !scaffoldAudit.includes("risk-signals")
 ) {
   failures.push("Risk watch, weather risk signals, and risk-signals expectations are not documented consistently.");
+}
+
+if (
+  !readme.includes("PWA") ||
+  !readme.includes("Offline Last Forecast") ||
+  !readme.includes("last successful forecast") ||
+  !readme.includes("service worker") ||
+  !readme.includes("manifest.webmanifest") ||
+  !scaffoldAudit.includes("PWA") ||
+  !scaffoldAudit.includes("Offline Last Forecast") ||
+  !scaffoldAudit.includes("last successful forecast") ||
+  !scaffoldAudit.includes("service worker") ||
+  !scaffoldAudit.includes("manifest.webmanifest")
+) {
+  failures.push("PWA installability, Offline Last Forecast, service worker, and manifest expectations are not documented consistently.");
 }
 
 if (readme.includes("OPENWEATHER_API_KEY") || scaffoldAudit.includes("OPENWEATHER_API_KEY")) {
@@ -402,6 +437,44 @@ if (
 }
 
 if (
+  !offlineCache.includes("WEATHER_OFFLINE_SNAPSHOT_KEY") ||
+  !offlineCache.includes("createWeatherOfflineSnapshot") ||
+  !offlineCache.includes("readLastWeatherSnapshot") ||
+  !offlineCache.includes("writeLastWeatherSnapshot") ||
+  !offlineCache.includes("normalizeWeatherOfflineSnapshot")
+) {
+  failures.push("Offline forecast cache helpers must centralize last successful forecast persistence.");
+}
+
+if (
+  !appLayout.includes('manifest: "/manifest.webmanifest"') ||
+  !appLayout.includes("PwaRegister") ||
+  !webManifest.includes('"display": "standalone"') ||
+  !webManifest.includes('"theme_color": "#0891b2"') ||
+  !webManifest.includes("/icons/weather-icon.svg") ||
+  !webManifest.includes("/icons/weather-maskable.svg") ||
+  !pwaRegister.includes('navigator.serviceWorker.register("/sw.js")') ||
+  !serviceWorker.includes("my-weather-app-shell-v1") ||
+  !serviceWorker.includes("networkFirstNavigation") ||
+  !serviceWorker.includes('url.pathname.startsWith("/api/")') ||
+  !pwaIcon.includes("My Weather App icon") ||
+  !pwaMaskableIcon.includes("maskable icon")
+) {
+  failures.push("PWA manifest, icons, service worker registration, and app-shell caching must stay wired.");
+}
+
+if (
+  !weatherDashboard.includes("OfflineStatusBanner") ||
+  !weatherDashboard.includes("readLastWeatherSnapshot") ||
+  !weatherDashboard.includes("writeLastWeatherSnapshot") ||
+  !weatherDashboard.includes("createWeatherOfflineSnapshot") ||
+  !weatherDashboard.includes("Offline mode") ||
+  !weatherDashboard.includes("Reconnect to refresh live weather")
+) {
+  failures.push("Dashboard must expose offline status and hydrate the last successful forecast when offline.");
+}
+
+if (
   !weatherDashboard.includes('aria-live="polite"') ||
   !weatherDashboard.includes('role="status"') ||
   !weatherDashboard.includes('role={tone === "error" ? "alert" : "status"}') ||
@@ -539,6 +612,20 @@ for (const coveredName of menuPreferenceCoverage) {
   }
 }
 
+const offlineCacheCoverage = [
+  "createWeatherOfflineSnapshot",
+  "readLastWeatherSnapshot",
+  "writeLastWeatherSnapshot",
+  "normalizeWeatherOfflineSnapshot",
+  "WEATHER_OFFLINE_SNAPSHOT_KEY"
+];
+
+for (const coveredName of offlineCacheCoverage) {
+  if (!offlineCacheTests.includes(coveredName)) {
+    failures.push(`${coveredName} is missing offline cache test coverage.`);
+  }
+}
+
 const openMeteoCoverage = ["mapWeatherCode", "mapOpenMeteoResponse", "hourly"];
 
 for (const coveredName of openMeteoCoverage) {
@@ -647,6 +734,7 @@ const uxStructureCoverage = [
   "forecast chart cards",
   "planning sections",
   "Risk watch",
+  "PWA install",
   "mobile-friendly sun and moon"
 ];
 

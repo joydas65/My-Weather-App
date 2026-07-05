@@ -5,17 +5,22 @@ import { describe, expect, it } from "vitest";
 const root = process.cwd();
 const read = (path: string) => readFileSync(join(root, path), "utf8");
 
+const appLayout = read("app/layout.tsx");
 const dashboard = read("components/weather/weather-dashboard.tsx");
 const forecastChart = read("components/weather/forecast-chart.tsx");
 const hourlyTimeline = read("components/weather/hourly-timeline.tsx");
+const pwaRegister = read("components/pwa/pwa-register.tsx");
 const smartInsights = read("components/weather/smart-insights.tsx");
 const sunMoonTable = read("components/weather/sun-moon-table.tsx");
 const tomorrowBrief = read("components/weather/tomorrow-brief.tsx");
 const weatherRiskCards = read("components/weather/weather-risk-cards.tsx");
 const weatherMenu = read("components/weather/weather-menu.tsx");
 const decisionSupport = read("lib/weather/decision-support.ts");
+const manifest = read("public/manifest.webmanifest");
+const offlineCache = read("lib/weather/offline-cache.ts");
 const preferences = read("lib/weather/preferences.ts");
 const riskSignals = read("lib/weather/risk-signals.ts");
+const serviceWorker = read("public/sw.js");
 
 describe("UX structure", () => {
   it("keeps retired legacy assets out of the product", () => {
@@ -121,6 +126,25 @@ describe("UX structure", () => {
     expect(decisionSupport).toContain("buildTomorrowBrief");
     expect(decisionSupport).toContain("buildWeatherInsights");
     expect(decisionSupport).toContain("selectNextHourlyForecast");
+  });
+
+  it("keeps PWA install and offline forecast recovery wired", () => {
+    expect(appLayout).toContain('manifest: "/manifest.webmanifest"');
+    expect(appLayout).toContain("PwaRegister");
+    expect(manifest).toContain('"display": "standalone"');
+    expect(manifest).toContain('"theme_color": "#0891b2"');
+    expect(manifest).toContain("/icons/weather-icon.svg");
+    expect(pwaRegister).toContain('navigator.serviceWorker.register("/sw.js")');
+    expect(serviceWorker).toContain("my-weather-app-shell-v1");
+    expect(serviceWorker).toContain("networkFirstNavigation");
+    expect(serviceWorker).toContain('url.pathname.startsWith("/api/")');
+    expect(offlineCache).toContain("WEATHER_OFFLINE_SNAPSHOT_KEY");
+    expect(offlineCache).toContain("createWeatherOfflineSnapshot");
+    expect(offlineCache).toContain("readLastWeatherSnapshot");
+    expect(dashboard).toContain("OfflineStatusBanner");
+    expect(dashboard).toContain("writeLastWeatherSnapshot");
+    expect(dashboard).toContain("readLastWeatherSnapshot");
+    expect(dashboard).toContain("Offline mode");
   });
 
   it("renders mobile-friendly sun and moon cards before the desktop table", () => {

@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import {
+  OfflineStatusBanner,
   WeatherDashboard,
   WeatherLoadingPanel,
   WeatherStatePanel,
@@ -226,6 +227,25 @@ describe("weather component behavior", () => {
     expect(markup).toContain("Weather safety signals");
     expect(markup).toContain("Rain watch");
     expect(markup).toContain("Wind watch");
+  });
+
+  it("renders a persistent offline last-forecast banner", () => {
+    const markup = renderToStaticMarkup(
+      <OfflineStatusBanner
+        isLoading={false}
+        isOffline
+        snapshot={{
+          cachedAt: "2026-07-04T12:05:00Z",
+          endpoint: "/api/weather?q=London",
+          label: "London, GB",
+          weather: menuWeather
+        }}
+      />
+    );
+
+    expect(markup).toContain("Offline mode");
+    expect(markup).toContain("Showing London, GB");
+    expect(markup).toContain("Reconnect to refresh live weather");
   });
 
   it("renders loading, blocked, no-results, and retryable API states", () => {

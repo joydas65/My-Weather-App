@@ -1,0 +1,25 @@
+{
+  "name": "My Weather App",
+  "short_name": "Weather",
+  "description": "Installable weather dashboard with offline access to the last loaded forecast.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ecfeff",
+  "theme_color": "#0891b2",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/weather-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/weather-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

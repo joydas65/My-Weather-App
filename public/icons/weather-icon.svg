@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">My Weather App icon</title>
+  <desc id="desc">A sun and cloud weather app icon on a cyan background.</desc>
+  <rect width="512" height="512" rx="112" fill="#ecfeff"/>
+  <circle cx="202" cy="190" r="76" fill="#fde68a"/>
+  <g stroke="#f59e0b" stroke-linecap="round" stroke-width="26">
+    <path d="M202 60v42"/>
+    <path d="M202 278v42"/>
+    <path d="M72 190h42"/>
+    <path d="M290 190h42"/>
+    <path d="m110 98 30 30"/>
+    <path d="m264 252 30 30"/>
+    <path d="m294 98-30 30"/>
+    <path d="m140 252-30 30"/>
+  </g>
+  <path fill="#0891b2" d="M335 366H173c-58 0-105-42-105-94 0-47 38-87 90-93 26-52 82-85 144-85 84 0 153 60 160 137 45 17 75 56 75 100 0 58-52 105-116 105h-86z"/>
+  <path fill="#cffafe" d="M328 332H174c-33 0-60-24-60-53 0-28 25-51 57-53 18-51 72-87 135-87 70 0 127 45 133 102 32 8 55 34 55 65 0 37-33 67-73 67h-93z"/>
+</svg>
