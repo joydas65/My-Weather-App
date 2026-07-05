@@ -10,6 +10,7 @@ import { HourlyTimeline } from "@/components/weather/hourly-timeline";
 import { SmartInsights } from "@/components/weather/smart-insights";
 import { TomorrowBriefCard } from "@/components/weather/tomorrow-brief";
 import { WeatherMenuDrawer } from "@/components/weather/weather-menu";
+import { WeatherRiskCards } from "@/components/weather/weather-risk-cards";
 import { SunMoonTable } from "@/components/weather/sun-moon-table";
 import {
   getWeatherConditionPresentation,
@@ -188,6 +189,7 @@ describe("weather component behavior", () => {
     expect(markup).toContain("Use current location");
     expect(markup).toContain("Current weather");
     expect(markup).toContain("Forecast charts");
+    expect(markup).toContain("Risk watch");
     expect(markup).toContain("Daily outlook");
     expect(markup).toContain("Sun and moon");
     expect(markup).toContain("Locations");
@@ -210,6 +212,7 @@ describe("weather component behavior", () => {
         <TomorrowBriefCard units={menuPreferences.units} weather={menuWeather} />
         <HourlyTimeline units={menuPreferences.units} weather={menuWeather} />
         <SmartInsights units={menuPreferences.units} weather={menuWeather} />
+        <WeatherRiskCards units={menuPreferences.units} weather={menuWeather} />
       </>
     );
 
@@ -219,6 +222,10 @@ describe("weather component behavior", () => {
     expect(markup).toContain("Smart insights");
     expect(markup).toContain("Umbrella window");
     expect(markup).toContain("Wind picks up");
+    expect(markup).toContain("Risk watch");
+    expect(markup).toContain("Weather safety signals");
+    expect(markup).toContain("Rain watch");
+    expect(markup).toContain("Wind watch");
   });
 
   it("renders loading, blocked, no-results, and retryable API states", () => {

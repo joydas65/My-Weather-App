@@ -30,6 +30,7 @@ import { SunMoonTable } from "@/components/weather/sun-moon-table";
 import { TomorrowBriefCard } from "@/components/weather/tomorrow-brief";
 import { WeatherConditionIcon } from "@/components/weather/weather-condition-icon";
 import { WeatherMenuDrawer } from "@/components/weather/weather-menu";
+import { WeatherRiskCards } from "@/components/weather/weather-risk-cards";
 import {
   isWeatherApiFailure,
   type WeatherApiResponse,
@@ -642,6 +643,10 @@ function WeatherReportSections({
 
         <section className="scroll-mt-4" id="hourly-timeline">
           <HourlyTimeline units={units} weather={weather} />
+        </section>
+
+        <section className="scroll-mt-4" id="risk-watch">
+          <WeatherRiskCards units={units} weather={weather} />
         </section>
 
         <section className="grid min-w-0 gap-4 xl:grid-cols-2 scroll-mt-4" id="forecast-charts">

@@ -12,6 +12,7 @@ import {
   RefreshCw,
   Ruler,
   Search,
+  ShieldAlert,
   Sparkles,
   SunMedium,
   ThermometerSun,
@@ -82,6 +83,12 @@ const activeForecastItems: MenuItem[] = [
     href: "#hourly-timeline",
     icon: Clock3,
     label: "Hourly timeline"
+  },
+  {
+    detail: "Rain, heat, wind, cold, and visibility signals",
+    href: "#risk-watch",
+    icon: ShieldAlert,
+    label: "Risk watch"
   },
   {
     detail: "Precipitation and temperature trends",

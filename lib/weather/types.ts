@@ -102,6 +102,28 @@ export type WeatherInsight = {
   tone: WeatherInsightTone;
 };
 
+export type WeatherRiskCategory =
+  | "cold"
+  | "heat"
+  | "rain"
+  | "storm"
+  | "visibility"
+  | "wind"
+  | "none";
+
+export type WeatherRiskSeverity = "low" | "moderate" | "high";
+
+export type WeatherRiskSignal = {
+  action: string;
+  category: WeatherRiskCategory;
+  detail: string;
+  id: string;
+  score: number;
+  severity: WeatherRiskSeverity;
+  timing: string;
+  title: string;
+};
+
 export type WeatherReportMetadata = {
   provider: WeatherProvider;
   fetchedAt: string;

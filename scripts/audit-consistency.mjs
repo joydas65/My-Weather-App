@@ -31,6 +31,10 @@ const decisionSupportTests = await readFile(
   join(root, "tests", "decision-support.test.ts"),
   "utf8"
 );
+const riskSignalTests = await readFile(
+  join(root, "tests", "risk-signals.test.ts"),
+  "utf8"
+);
 const weatherTypes = await readFile(join(root, "lib", "weather", "types.ts"), "utf8");
 const weatherPreferences = await readFile(
   join(root, "lib", "weather", "preferences.ts"),
@@ -43,6 +47,10 @@ const astronomyHelpers = await readFile(
 const chartData = await readFile(join(root, "lib", "weather", "chart-data.ts"), "utf8");
 const decisionSupport = await readFile(
   join(root, "lib", "weather", "decision-support.ts"),
+  "utf8"
+);
+const riskSignals = await readFile(
+  join(root, "lib", "weather", "risk-signals.ts"),
   "utf8"
 );
 const forecastChart = await readFile(
@@ -59,6 +67,10 @@ const smartInsights = await readFile(
 );
 const tomorrowBrief = await readFile(
   join(root, "components", "weather", "tomorrow-brief.tsx"),
+  "utf8"
+);
+const weatherRiskCards = await readFile(
+  join(root, "components", "weather", "weather-risk-cards.tsx"),
   "utf8"
 );
 const weatherApiContract = await readFile(join(root, "lib", "weather", "api.ts"), "utf8");
@@ -184,6 +196,17 @@ if (
   failures.push("Tomorrow brief, hourly timeline, smart insights, and decision-support expectations are not documented consistently.");
 }
 
+if (
+  !readme.includes("Risk watch") ||
+  !readme.includes("Weather safety signals") ||
+  !readme.includes("risk-signals") ||
+  !scaffoldAudit.includes("Risk watch") ||
+  !scaffoldAudit.includes("weather risk signals") ||
+  !scaffoldAudit.includes("risk-signals")
+) {
+  failures.push("Risk watch, weather risk signals, and risk-signals expectations are not documented consistently.");
+}
+
 if (readme.includes("OPENWEATHER_API_KEY") || scaffoldAudit.includes("OPENWEATHER_API_KEY")) {
   failures.push("OpenWeather environment key documentation should remain retired.");
 }
@@ -232,6 +255,9 @@ const requiredTypeNames = [
   "TomorrowBrief",
   "WeatherReportMetadata",
   "WeatherInsight",
+  "WeatherRiskSignal",
+  "WeatherRiskSeverity",
+  "WeatherRiskCategory",
   "PrecipitationChartPoint",
   "TemperatureChartPoint"
 ];
@@ -266,6 +292,18 @@ if (
 }
 
 if (
+  !riskSignals.includes("buildWeatherRiskSignals") ||
+  !riskSignals.includes("Heavy rain risk") ||
+  !riskSignals.includes("High heat risk") ||
+  !riskSignals.includes("Freezing risk") ||
+  !riskSignals.includes("High wind risk") ||
+  !riskSignals.includes("Poor visibility risk") ||
+  !riskSignals.includes("No elevated risks")
+) {
+  failures.push("Risk-signal helpers must centralize rain, heat, cold, wind, visibility, storm, and low-risk fallback behavior.");
+}
+
+if (
   !forecastChart.includes("buildForecastChartModel") ||
   !forecastChart.includes("ForecastChartStatePanel") ||
   !forecastChart.includes("ForecastChartErrorBoundary") ||
@@ -290,9 +328,12 @@ if (
   !hourlyTimeline.includes("Hourly timeline") ||
   !hourlyTimeline.includes("Next 24 hours") ||
   !smartInsights.includes("Smart insights") ||
-  !smartInsights.includes("Planning signals")
+  !smartInsights.includes("Planning signals") ||
+  !weatherRiskCards.includes("Risk watch") ||
+  !weatherRiskCards.includes("Weather safety signals") ||
+  !weatherRiskCards.includes("buildWeatherRiskSignals")
 ) {
-  failures.push("Tomorrow brief, hourly timeline, and smart insight components must expose the expected planning surfaces.");
+  failures.push("Tomorrow brief, hourly timeline, smart insight, and risk watch components must expose the expected planning surfaces.");
 }
 
 if (
@@ -307,6 +348,7 @@ if (
   !weatherDashboard.includes("TomorrowBriefCard") ||
   !weatherDashboard.includes("HourlyTimeline") ||
   !weatherDashboard.includes("SmartInsights") ||
+  !weatherDashboard.includes("WeatherRiskCards") ||
   !weatherDashboard.includes("lastRequest") ||
   !weatherDashboard.includes("refreshWeather") ||
   !weatherDashboard.includes("readWeatherMenuPreferences") ||
@@ -338,6 +380,7 @@ if (
   !weatherMenu.includes("Refresh weather") ||
   !weatherMenu.includes("#smart-forecast") ||
   !weatherMenu.includes("#hourly-timeline") ||
+  !weatherMenu.includes("#risk-watch") ||
   !weatherMenu.includes("#forecast-charts") ||
   !weatherMenu.includes("#daily-outlook") ||
   !weatherMenu.includes("#sun-moon")
@@ -386,6 +429,7 @@ if (
   !weatherDashboard.includes("xl:grid-cols") ||
   !weatherDashboard.includes('id="smart-forecast"') ||
   !weatherDashboard.includes('id="hourly-timeline"') ||
+  !weatherDashboard.includes('id="risk-watch"') ||
   !weatherDashboard.includes("grid min-w-0 gap-4 xl:grid-cols-2") ||
   !forecastChart.includes("min-w-0 space-y-3") ||
   !forecastChart.includes("h-72 min-w-0 w-full") ||
@@ -538,6 +582,21 @@ for (const coveredName of decisionSupportCoverage) {
   }
 }
 
+const riskSignalCoverage = [
+  "buildWeatherRiskSignals",
+  "Storm risk",
+  "Heavy rain risk",
+  "High heat risk",
+  "Poor visibility risk",
+  "No elevated risks"
+];
+
+for (const coveredName of riskSignalCoverage) {
+  if (!riskSignalTests.includes(coveredName)) {
+    failures.push(`${coveredName} is missing risk-signal test coverage.`);
+  }
+}
+
 const forecastChartCoverage = [
   "ForecastChart",
   "buildForecastChartModel",
@@ -569,7 +628,8 @@ const componentCoverage = [
   "WeatherMenuDrawer",
   "TomorrowBriefCard",
   "HourlyTimeline",
-  "SmartInsights"
+  "SmartInsights",
+  "WeatherRiskCards"
 ];
 
 for (const coveredName of componentCoverage) {
@@ -586,6 +646,7 @@ const uxStructureCoverage = [
   "WEATHER_MENU_PREFERENCES_KEY",
   "forecast chart cards",
   "planning sections",
+  "Risk watch",
   "mobile-friendly sun and moon"
 ];
 

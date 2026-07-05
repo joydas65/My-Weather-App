@@ -11,9 +11,11 @@ const hourlyTimeline = read("components/weather/hourly-timeline.tsx");
 const smartInsights = read("components/weather/smart-insights.tsx");
 const sunMoonTable = read("components/weather/sun-moon-table.tsx");
 const tomorrowBrief = read("components/weather/tomorrow-brief.tsx");
+const weatherRiskCards = read("components/weather/weather-risk-cards.tsx");
 const weatherMenu = read("components/weather/weather-menu.tsx");
 const decisionSupport = read("lib/weather/decision-support.ts");
 const preferences = read("lib/weather/preferences.ts");
+const riskSignals = read("lib/weather/risk-signals.ts");
 
 describe("UX structure", () => {
   it("keeps retired legacy assets out of the product", () => {
@@ -79,6 +81,7 @@ describe("UX structure", () => {
     expect(weatherMenu).toContain("Refresh weather");
     expect(weatherMenu).toContain("#smart-forecast");
     expect(weatherMenu).toContain("#hourly-timeline");
+    expect(weatherMenu).toContain("#risk-watch");
     expect(weatherMenu).toContain("#forecast-charts");
     expect(weatherMenu).toContain("#daily-outlook");
     expect(weatherMenu).toContain("#sun-moon");
@@ -98,8 +101,10 @@ describe("UX structure", () => {
     expect(dashboard).toContain("TomorrowBriefCard");
     expect(dashboard).toContain("HourlyTimeline");
     expect(dashboard).toContain("SmartInsights");
+    expect(dashboard).toContain("WeatherRiskCards");
     expect(dashboard).toContain('id="smart-forecast"');
     expect(dashboard).toContain('id="hourly-timeline"');
+    expect(dashboard).toContain('id="risk-watch"');
     expect(tomorrowBrief).toContain("Tomorrow brief");
     expect(tomorrowBrief).toContain("Best window");
     expect(hourlyTimeline).toContain("Hourly timeline");
@@ -107,6 +112,12 @@ describe("UX structure", () => {
     expect(hourlyTimeline).toContain('data-testid="hourly-timeline-scroll"');
     expect(smartInsights).toContain("Smart insights");
     expect(smartInsights).toContain("Planning signals");
+    expect(weatherRiskCards).toContain("Risk watch");
+    expect(weatherRiskCards).toContain("Weather safety signals");
+    expect(weatherRiskCards).toContain("buildWeatherRiskSignals");
+    expect(riskSignals).toContain("buildWeatherRiskSignals");
+    expect(riskSignals).toContain("Heavy rain risk");
+    expect(riskSignals).toContain("Poor visibility risk");
     expect(decisionSupport).toContain("buildTomorrowBrief");
     expect(decisionSupport).toContain("buildWeatherInsights");
     expect(decisionSupport).toContain("selectNextHourlyForecast");
