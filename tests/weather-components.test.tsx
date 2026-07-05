@@ -8,6 +8,8 @@ import {
   WEATHER_VIEW_STATES
 } from "@/components/weather/weather-dashboard";
 import { HourlyTimeline } from "@/components/weather/hourly-timeline";
+import { LocationComparisonPanel } from "@/components/weather/location-comparison";
+import { ShareForecastCard } from "@/components/weather/share-forecast-card";
 import { SmartInsights } from "@/components/weather/smart-insights";
 import { TomorrowBriefCard } from "@/components/weather/tomorrow-brief";
 import { WeatherMenuDrawer } from "@/components/weather/weather-menu";
@@ -191,6 +193,8 @@ describe("weather component behavior", () => {
     expect(markup).toContain("Current weather");
     expect(markup).toContain("Forecast charts");
     expect(markup).toContain("Risk watch");
+    expect(markup).toContain("Compare locations");
+    expect(markup).toContain("Share forecast");
     expect(markup).toContain("Daily outlook");
     expect(markup).toContain("Sun and moon");
     expect(markup).toContain("Locations");
@@ -227,6 +231,35 @@ describe("weather component behavior", () => {
     expect(markup).toContain("Weather safety signals");
     expect(markup).toContain("Rain watch");
     expect(markup).toContain("Wind watch");
+  });
+
+  it("renders compare locations and shareable forecast card surfaces", () => {
+    const markup = renderToStaticMarkup(
+      <>
+        <LocationComparisonPanel
+          currentLocation={londonLocation}
+          currentWeather={menuWeather}
+          isDashboardLoading={false}
+          onLoadLocation={() => undefined}
+          onOpenMenu={() => undefined}
+          savedLocations={[londonLocation, parisLocation]}
+          units={menuPreferences.units}
+        />
+        <ShareForecastCard units={menuPreferences.units} weather={menuWeather} />
+      </>
+    );
+
+    expect(markup).toContain("Compare locations");
+    expect(markup).toContain("Saved weather matchup");
+    expect(markup).toContain("Manage saved");
+    expect(markup).toContain("Refresh comparison");
+    expect(markup).toContain("London, GB");
+    expect(markup).toContain("Paris, FR");
+    expect(markup).toContain("Loading saved forecast");
+    expect(markup).toContain("Shareable forecast card");
+    expect(markup).toContain("Ready-made weather update");
+    expect(markup).toContain("Copy summary");
+    expect(markup).toContain("Uses native share when available");
   });
 
   it("renders a persistent offline last-forecast banner", () => {

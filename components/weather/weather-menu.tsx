@@ -9,10 +9,12 @@ import {
   History,
   LocateFixed,
   LucideIcon,
+  MapPinned,
   RefreshCw,
   Ruler,
   Search,
   ShieldAlert,
+  Share2,
   Sparkles,
   SunMedium,
   ThermometerSun,
@@ -89,6 +91,18 @@ const activeForecastItems: MenuItem[] = [
     href: "#risk-watch",
     icon: ShieldAlert,
     label: "Risk watch"
+  },
+  {
+    detail: "Side-by-side saved city decisions",
+    href: "#location-compare",
+    icon: MapPinned,
+    label: "Compare locations"
+  },
+  {
+    detail: "Share or copy a polished forecast card",
+    href: "#share-forecast",
+    icon: Share2,
+    label: "Share forecast"
   },
   {
     detail: "Precipitation and temperature trends",

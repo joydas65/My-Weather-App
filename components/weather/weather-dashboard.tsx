@@ -21,11 +21,13 @@ import {
   WifiOff,
   Wind
 } from "lucide-react";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { DailyForecast } from "@/components/weather/daily-forecast";
 import { ForecastChart } from "@/components/weather/forecast-chart";
 import { HourlyTimeline } from "@/components/weather/hourly-timeline";
+import { LocationComparisonPanel } from "@/components/weather/location-comparison";
 import { MetricCard } from "@/components/weather/metric-card";
+import { ShareForecastCard } from "@/components/weather/share-forecast-card";
 import { SmartInsights } from "@/components/weather/smart-insights";
 import { SunMoonTable } from "@/components/weather/sun-moon-table";
 import { TomorrowBriefCard } from "@/components/weather/tomorrow-brief";
@@ -129,10 +131,13 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const noticeTimerRef = useRef<number | null>(null);
   const isLoading = viewState.status === "loading";
-  const currentMenuLocation =
-    weather && lastRequest
-      ? createWeatherMenuLocation(weather, lastRequest.endpoint)
-      : null;
+  const currentMenuLocation = useMemo(
+    () =>
+      weather && lastRequest
+        ? createWeatherMenuLocation(weather, lastRequest.endpoint)
+        : null,
+    [lastRequest, weather]
+  );
   const isCurrentLocationSaved = isMenuLocationSaved(
     menuPreferences,
     currentMenuLocation?.id
@@ -604,7 +609,11 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
 
         {weather && sunStatus ? (
           <WeatherReportSections
+            currentLocation={currentMenuLocation}
             isLoading={isLoading}
+            onLoadLocation={loadMenuLocation}
+            onOpenMenu={() => setIsMenuOpen(true)}
+            savedLocations={menuPreferences.savedLocations}
             sunStatus={sunStatus}
             units={menuPreferences.units}
             weather={weather}
@@ -680,12 +689,20 @@ export function OfflineStatusBanner({
 }
 
 function WeatherReportSections({
+  currentLocation,
   isLoading,
+  onLoadLocation,
+  onOpenMenu,
+  savedLocations,
   sunStatus,
   units,
   weather
 }: {
+  currentLocation: WeatherMenuLocation | null;
   isLoading: boolean;
+  onLoadLocation: (location: WeatherMenuLocation) => void;
+  onOpenMenu: () => void;
+  savedLocations: WeatherMenuLocation[];
   sunStatus: { sunrise: string; sunset: string };
   units: WeatherUnitPreferences;
   weather: WeatherReport;
@@ -813,6 +830,22 @@ function WeatherReportSections({
 
         <section className="scroll-mt-4" id="risk-watch">
           <WeatherRiskCards units={units} weather={weather} />
+        </section>
+
+        <section className="scroll-mt-4" id="location-compare">
+          <LocationComparisonPanel
+            currentLocation={currentLocation}
+            currentWeather={weather}
+            isDashboardLoading={isLoading}
+            onLoadLocation={onLoadLocation}
+            onOpenMenu={onOpenMenu}
+            savedLocations={savedLocations}
+            units={units}
+          />
+        </section>
+
+        <section className="scroll-mt-4" id="share-forecast">
+          <ShareForecastCard units={units} weather={weather} />
         </section>
 
         <section className="grid min-w-0 gap-4 xl:grid-cols-2 scroll-mt-4" id="forecast-charts">

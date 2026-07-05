@@ -39,6 +39,11 @@ const riskSignalTests = await readFile(
   join(root, "tests", "risk-signals.test.ts"),
   "utf8"
 );
+const locationComparisonTests = await readFile(
+  join(root, "tests", "location-comparison.test.ts"),
+  "utf8"
+);
+const shareCardTests = await readFile(join(root, "tests", "share-card.test.ts"), "utf8");
 const weatherTypes = await readFile(join(root, "lib", "weather", "types.ts"), "utf8");
 const weatherPreferences = await readFile(
   join(root, "lib", "weather", "preferences.ts"),
@@ -61,6 +66,11 @@ const riskSignals = await readFile(
   join(root, "lib", "weather", "risk-signals.ts"),
   "utf8"
 );
+const locationComparison = await readFile(
+  join(root, "lib", "weather", "location-comparison.ts"),
+  "utf8"
+);
+const shareCard = await readFile(join(root, "lib", "weather", "share-card.ts"), "utf8");
 const forecastChart = await readFile(
   join(root, "components", "weather", "forecast-chart.tsx"),
   "utf8"
@@ -79,6 +89,14 @@ const tomorrowBrief = await readFile(
 );
 const weatherRiskCards = await readFile(
   join(root, "components", "weather", "weather-risk-cards.tsx"),
+  "utf8"
+);
+const locationComparisonPanel = await readFile(
+  join(root, "components", "weather", "location-comparison.tsx"),
+  "utf8"
+);
+const shareForecastCard = await readFile(
+  join(root, "components", "weather", "share-forecast-card.tsx"),
   "utf8"
 );
 const weatherApiContract = await readFile(join(root, "lib", "weather", "api.ts"), "utf8");
@@ -228,6 +246,19 @@ if (
 }
 
 if (
+  !readme.includes("Compare Saved Locations") ||
+  !readme.includes("Shareable Forecast Card") ||
+  !readme.includes("location-comparison") ||
+  !readme.includes("share-card") ||
+  !scaffoldAudit.includes("Compare Saved Locations") ||
+  !scaffoldAudit.includes("Shareable Forecast Card") ||
+  !scaffoldAudit.includes("location-comparison") ||
+  !scaffoldAudit.includes("share-card")
+) {
+  failures.push("Compare Saved Locations, Shareable Forecast Card, and their helper expectations are not documented consistently.");
+}
+
+if (
   !readme.includes("PWA") ||
   !readme.includes("Offline Last Forecast") ||
   !readme.includes("last successful forecast") ||
@@ -339,6 +370,25 @@ if (
 }
 
 if (
+  !locationComparison.includes("MAX_COMPARE_LOCATIONS") ||
+  !locationComparison.includes("selectLocationComparisonTargets") ||
+  !locationComparison.includes("buildLocationComparisonSummary") ||
+  !locationComparison.includes("LocationComparisonSummary") ||
+  !locationComparison.includes("getTomorrowRainChance")
+) {
+  failures.push("Location-comparison helpers must centralize target selection, comparison limits, rain comparison, and summary generation.");
+}
+
+if (
+  !shareCard.includes("ForecastShareCardModel") ||
+  !shareCard.includes("buildForecastShareCardModel") ||
+  !shareCard.includes("Weather in") ||
+  !shareCard.includes("Source:")
+) {
+  failures.push("Share-card helpers must centralize forecast card copy and share text generation.");
+}
+
+if (
   !forecastChart.includes("buildForecastChartModel") ||
   !forecastChart.includes("ForecastChartStatePanel") ||
   !forecastChart.includes("ForecastChartErrorBoundary") ||
@@ -384,6 +434,8 @@ if (
   !weatherDashboard.includes("HourlyTimeline") ||
   !weatherDashboard.includes("SmartInsights") ||
   !weatherDashboard.includes("WeatherRiskCards") ||
+  !weatherDashboard.includes("LocationComparisonPanel") ||
+  !weatherDashboard.includes("ShareForecastCard") ||
   !weatherDashboard.includes("lastRequest") ||
   !weatherDashboard.includes("refreshWeather") ||
   !weatherDashboard.includes("readWeatherMenuPreferences") ||
@@ -413,9 +465,13 @@ if (
   !weatherMenu.includes("Temperature") ||
   !weatherMenu.includes("Measurement preferences") ||
   !weatherMenu.includes("Refresh weather") ||
+  !weatherMenu.includes("Compare locations") ||
+  !weatherMenu.includes("Share forecast") ||
   !weatherMenu.includes("#smart-forecast") ||
   !weatherMenu.includes("#hourly-timeline") ||
   !weatherMenu.includes("#risk-watch") ||
+  !weatherMenu.includes("#location-compare") ||
+  !weatherMenu.includes("#share-forecast") ||
   !weatherMenu.includes("#forecast-charts") ||
   !weatherMenu.includes("#daily-outlook") ||
   !weatherMenu.includes("#sun-moon")
@@ -475,6 +531,24 @@ if (
 }
 
 if (
+  !weatherDashboard.includes('id="location-compare"') ||
+  !weatherDashboard.includes('id="share-forecast"') ||
+  !locationComparisonPanel.includes("Saved weather matchup") ||
+  !locationComparisonPanel.includes("Partial failures stay isolated") ||
+  !locationComparisonPanel.includes("Refresh comparison") ||
+  !locationComparisonPanel.includes("Retry comparison") ||
+  !locationComparisonPanel.includes("selectLocationComparisonTargets") ||
+  !locationComparisonPanel.includes("buildLocationComparisonSummary") ||
+  !shareForecastCard.includes("Shareable forecast card") ||
+  !shareForecastCard.includes("Ready-made weather update") ||
+  !shareForecastCard.includes("navigator.share") ||
+  !shareForecastCard.includes("navigator.clipboard.writeText") ||
+  !shareForecastCard.includes("buildForecastShareCardModel")
+) {
+  failures.push("Compare locations and Shareable Forecast Card UI must stay wired with partial-failure, share, and clipboard behavior.");
+}
+
+if (
   !weatherDashboard.includes('aria-live="polite"') ||
   !weatherDashboard.includes('role="status"') ||
   !weatherDashboard.includes('role={tone === "error" ? "alert" : "status"}') ||
@@ -503,6 +577,8 @@ if (
   !weatherDashboard.includes('id="smart-forecast"') ||
   !weatherDashboard.includes('id="hourly-timeline"') ||
   !weatherDashboard.includes('id="risk-watch"') ||
+  !weatherDashboard.includes('id="location-compare"') ||
+  !weatherDashboard.includes('id="share-forecast"') ||
   !weatherDashboard.includes("grid min-w-0 gap-4 xl:grid-cols-2") ||
   !forecastChart.includes("min-w-0 space-y-3") ||
   !forecastChart.includes("h-72 min-w-0 w-full") ||
@@ -684,6 +760,34 @@ for (const coveredName of riskSignalCoverage) {
   }
 }
 
+const locationComparisonCoverage = [
+  "MAX_COMPARE_LOCATIONS",
+  "selectLocationComparisonTargets",
+  "buildLocationComparisonSummary",
+  "getTomorrowRainChance",
+  "Best saved-location matchup"
+];
+
+for (const coveredName of locationComparisonCoverage) {
+  if (!locationComparisonTests.includes(coveredName)) {
+    failures.push(`${coveredName} is missing location comparison test coverage.`);
+  }
+}
+
+const shareCardCoverage = [
+  "buildForecastShareCardModel",
+  "Weather in London, GB",
+  "Source: Open-Meteo",
+  "fahrenheit",
+  "mph"
+];
+
+for (const coveredName of shareCardCoverage) {
+  if (!shareCardTests.includes(coveredName)) {
+    failures.push(`${coveredName} is missing share-card test coverage.`);
+  }
+}
+
 const forecastChartCoverage = [
   "ForecastChart",
   "buildForecastChartModel",
@@ -716,7 +820,9 @@ const componentCoverage = [
   "TomorrowBriefCard",
   "HourlyTimeline",
   "SmartInsights",
-  "WeatherRiskCards"
+  "WeatherRiskCards",
+  "LocationComparisonPanel",
+  "ShareForecastCard"
 ];
 
 for (const coveredName of componentCoverage) {
@@ -734,6 +840,8 @@ const uxStructureCoverage = [
   "forecast chart cards",
   "planning sections",
   "Risk watch",
+  "compare locations",
+  "shareable forecast card",
   "PWA install",
   "mobile-friendly sun and moon"
 ];

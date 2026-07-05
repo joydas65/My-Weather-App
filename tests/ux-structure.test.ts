@@ -9,17 +9,21 @@ const appLayout = read("app/layout.tsx");
 const dashboard = read("components/weather/weather-dashboard.tsx");
 const forecastChart = read("components/weather/forecast-chart.tsx");
 const hourlyTimeline = read("components/weather/hourly-timeline.tsx");
+const locationComparison = read("components/weather/location-comparison.tsx");
 const pwaRegister = read("components/pwa/pwa-register.tsx");
+const shareForecastCard = read("components/weather/share-forecast-card.tsx");
 const smartInsights = read("components/weather/smart-insights.tsx");
 const sunMoonTable = read("components/weather/sun-moon-table.tsx");
 const tomorrowBrief = read("components/weather/tomorrow-brief.tsx");
 const weatherRiskCards = read("components/weather/weather-risk-cards.tsx");
 const weatherMenu = read("components/weather/weather-menu.tsx");
 const decisionSupport = read("lib/weather/decision-support.ts");
+const locationComparisonHelpers = read("lib/weather/location-comparison.ts");
 const manifest = read("public/manifest.webmanifest");
 const offlineCache = read("lib/weather/offline-cache.ts");
 const preferences = read("lib/weather/preferences.ts");
 const riskSignals = read("lib/weather/risk-signals.ts");
+const shareCardHelpers = read("lib/weather/share-card.ts");
 const serviceWorker = read("public/sw.js");
 
 describe("UX structure", () => {
@@ -84,9 +88,13 @@ describe("UX structure", () => {
     expect(weatherMenu).toContain("Temperature");
     expect(weatherMenu).toContain("Measurement preferences");
     expect(weatherMenu).toContain("Refresh weather");
+    expect(weatherMenu).toContain("Compare locations");
+    expect(weatherMenu).toContain("Share forecast");
     expect(weatherMenu).toContain("#smart-forecast");
     expect(weatherMenu).toContain("#hourly-timeline");
     expect(weatherMenu).toContain("#risk-watch");
+    expect(weatherMenu).toContain("#location-compare");
+    expect(weatherMenu).toContain("#share-forecast");
     expect(weatherMenu).toContain("#forecast-charts");
     expect(weatherMenu).toContain("#daily-outlook");
     expect(weatherMenu).toContain("#sun-moon");
@@ -126,6 +134,26 @@ describe("UX structure", () => {
     expect(decisionSupport).toContain("buildTomorrowBrief");
     expect(decisionSupport).toContain("buildWeatherInsights");
     expect(decisionSupport).toContain("selectNextHourlyForecast");
+  });
+
+  it("keeps compare locations and shareable forecast card wired", () => {
+    expect(dashboard).toContain("LocationComparisonPanel");
+    expect(dashboard).toContain("ShareForecastCard");
+    expect(dashboard).toContain('id="location-compare"');
+    expect(dashboard).toContain('id="share-forecast"');
+    expect(locationComparison).toContain("Saved weather matchup");
+    expect(locationComparison).toContain("selectLocationComparisonTargets");
+    expect(locationComparison).toContain("buildLocationComparisonSummary");
+    expect(locationComparison).toContain("Refresh comparison");
+    expect(locationComparison).toContain("Retry comparison");
+    expect(locationComparison).toContain("Partial failures");
+    expect(locationComparisonHelpers).toContain("MAX_COMPARE_LOCATIONS");
+    expect(locationComparisonHelpers).toContain("LocationComparisonSummary");
+    expect(shareForecastCard).toContain("Shareable forecast card");
+    expect(shareForecastCard).toContain("Ready-made weather update");
+    expect(shareForecastCard).toContain("navigator.share");
+    expect(shareForecastCard).toContain("navigator.clipboard.writeText");
+    expect(shareCardHelpers).toContain("buildForecastShareCardModel");
   });
 
   it("keeps PWA install and offline forecast recovery wired", () => {
