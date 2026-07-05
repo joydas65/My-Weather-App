@@ -59,6 +59,71 @@ export type DailyForecast = {
   sunMoon: SunMoonTiming;
 };
 
+export type HourlyForecast = {
+  time: string;
+  condition: WeatherCondition;
+  description: string;
+  isDay: boolean;
+  temperatureC: number;
+  feelsLikeC: number;
+  precipitationChance: number;
+  cloudCover: number;
+  windSpeedMs: number;
+  windDegree: number;
+};
+
+export type TomorrowPeriod = {
+  label: "Morning" | "Afternoon" | "Evening";
+  condition: WeatherCondition;
+  isDay: boolean;
+  precipitationChance: number;
+  summary: string;
+  temperatureC: number;
+  windSpeedMs: number;
+};
+
+export type TomorrowBrief = {
+  bestWindow: string | null;
+  date: string;
+  headline: string;
+  periods: TomorrowPeriod[];
+  precipitationChance: number;
+  summary: string;
+  temperatureMaxC: number;
+  temperatureMinC: number;
+};
+
+export type WeatherInsightTone = "caution" | "comfort" | "rain" | "wind";
+
+export type WeatherInsight = {
+  detail: string;
+  id: string;
+  title: string;
+  tone: WeatherInsightTone;
+};
+
+export type WeatherRiskCategory =
+  | "cold"
+  | "heat"
+  | "rain"
+  | "storm"
+  | "visibility"
+  | "wind"
+  | "none";
+
+export type WeatherRiskSeverity = "low" | "moderate" | "high";
+
+export type WeatherRiskSignal = {
+  action: string;
+  category: WeatherRiskCategory;
+  detail: string;
+  id: string;
+  score: number;
+  severity: WeatherRiskSeverity;
+  timing: string;
+  title: string;
+};
+
 export type WeatherReportMetadata = {
   provider: WeatherProvider;
   fetchedAt: string;
@@ -68,6 +133,7 @@ export type WeatherReportMetadata = {
 export type WeatherReport = {
   current: CurrentWeather;
   daily: DailyForecast[];
+  hourly: HourlyForecast[];
   metadata: WeatherReportMetadata;
 };
 

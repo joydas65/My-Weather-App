@@ -1,12 +1,17 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import {
+  OfflineStatusBanner,
   WeatherDashboard,
   WeatherLoadingPanel,
   WeatherStatePanel,
   WEATHER_VIEW_STATES
 } from "@/components/weather/weather-dashboard";
+import { HourlyTimeline } from "@/components/weather/hourly-timeline";
+import { SmartInsights } from "@/components/weather/smart-insights";
+import { TomorrowBriefCard } from "@/components/weather/tomorrow-brief";
 import { WeatherMenuDrawer } from "@/components/weather/weather-menu";
+import { WeatherRiskCards } from "@/components/weather/weather-risk-cards";
 import { SunMoonTable } from "@/components/weather/sun-moon-table";
 import {
   getWeatherConditionPresentation,
@@ -18,7 +23,63 @@ import {
   saveMenuLocation,
   type WeatherMenuLocation
 } from "@/lib/weather/preferences";
-import type { DailyForecast, WeatherReport } from "@/lib/weather/types";
+import type {
+  DailyForecast,
+  HourlyForecast,
+  WeatherReport
+} from "@/lib/weather/types";
+
+const planningDaily: DailyForecast[] = [
+  {
+    date: "2026-07-04T12:00:00",
+    summary: "Sun and cloud mix",
+    precipitationChance: 24,
+    temperatureMinC: 14,
+    temperatureMaxC: 24,
+    sunMoon: {
+      sunrise: "2026-07-04T04:48:00Z",
+      sunset: "2026-07-04T20:22:00Z",
+      moonrise: null,
+      moonset: null,
+      moonPhase: "Waning gibbous",
+      moonIllumination: 82,
+      source: "estimated"
+    }
+  },
+  {
+    date: "2026-07-05T12:00:00",
+    summary: "Clear and dry",
+    precipitationChance: 12,
+    temperatureMinC: 15,
+    temperatureMaxC: 26,
+    sunMoon: {
+      sunrise: "2026-07-05T04:49:00Z",
+      sunset: "2026-07-05T20:21:00Z",
+      moonrise: null,
+      moonset: null,
+      moonPhase: "Last quarter",
+      moonIllumination: 74,
+      source: "estimated"
+    }
+  }
+];
+
+const planningHourly: HourlyForecast[] = Array.from({ length: 30 }, (_, index) => {
+  const time = new Date(Date.UTC(2026, 6, 4, 12 + index)).toISOString();
+
+  return {
+    time,
+    condition: index === 4 ? "rain" : "clouds",
+    description: index === 4 ? "Rain" : "Partly cloudy",
+    isDay: true,
+    temperatureC: index >= 18 ? 22 : 21,
+    feelsLikeC: index >= 18 ? 22 : 20,
+    precipitationChance: index === 4 ? 68 : 18,
+    cloudCover: 42,
+    windSpeedMs: index === 8 ? 10.5 : 5.8,
+    windDegree: 270
+  };
+});
 
 const menuWeather: WeatherReport = {
   current: {
@@ -42,7 +103,8 @@ const menuWeather: WeatherReport = {
     sunrise: "2026-07-04T04:48:00Z",
     sunset: "2026-07-04T20:22:00Z"
   },
-  daily: [],
+  daily: planningDaily,
+  hourly: planningHourly,
   metadata: {
     attribution: "Weather data by Open-Meteo",
     fetchedAt: "2026-07-04T12:05:00Z",
@@ -128,6 +190,7 @@ describe("weather component behavior", () => {
     expect(markup).toContain("Use current location");
     expect(markup).toContain("Current weather");
     expect(markup).toContain("Forecast charts");
+    expect(markup).toContain("Risk watch");
     expect(markup).toContain("Daily outlook");
     expect(markup).toContain("Sun and moon");
     expect(markup).toContain("Locations");
@@ -142,6 +205,47 @@ describe("weather component behavior", () => {
     expect(markup).toContain("Refresh weather");
     expect(markup).toContain("Loaded");
     expect(markup).toContain("Open-Meteo");
+  });
+
+  it("renders tomorrow, hourly, and smart planning sections with ready weather", () => {
+    const markup = renderToStaticMarkup(
+      <>
+        <TomorrowBriefCard units={menuPreferences.units} weather={menuWeather} />
+        <HourlyTimeline units={menuPreferences.units} weather={menuWeather} />
+        <SmartInsights units={menuPreferences.units} weather={menuWeather} />
+        <WeatherRiskCards units={menuPreferences.units} weather={menuWeather} />
+      </>
+    );
+
+    expect(markup).toContain("Tomorrow brief");
+    expect(markup).toContain("Hourly timeline");
+    expect(markup).toContain("Next 24 hours");
+    expect(markup).toContain("Smart insights");
+    expect(markup).toContain("Umbrella window");
+    expect(markup).toContain("Wind picks up");
+    expect(markup).toContain("Risk watch");
+    expect(markup).toContain("Weather safety signals");
+    expect(markup).toContain("Rain watch");
+    expect(markup).toContain("Wind watch");
+  });
+
+  it("renders a persistent offline last-forecast banner", () => {
+    const markup = renderToStaticMarkup(
+      <OfflineStatusBanner
+        isLoading={false}
+        isOffline
+        snapshot={{
+          cachedAt: "2026-07-04T12:05:00Z",
+          endpoint: "/api/weather?q=London",
+          label: "London, GB",
+          weather: menuWeather
+        }}
+      />
+    );
+
+    expect(markup).toContain("Offline mode");
+    expect(markup).toContain("Showing London, GB");
+    expect(markup).toContain("Reconnect to refresh live weather");
   });
 
   it("renders loading, blocked, no-results, and retryable API states", () => {

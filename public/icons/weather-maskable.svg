@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">My Weather App maskable icon</title>
+  <desc id="desc">A centered sun and cloud icon with safe padding for maskable app icons.</desc>
+  <rect width="512" height="512" fill="#0891b2"/>
+  <circle cx="200" cy="185" r="66" fill="#fde68a"/>
+  <g stroke="#fef3c7" stroke-linecap="round" stroke-width="22">
+    <path d="M200 80v36"/>
+    <path d="M92 185h36"/>
+    <path d="M272 112l-25 25"/>
+    <path d="M128 258l-25 25"/>
+  </g>
+  <path fill="#f8fafc" d="M350 368H183c-53 0-96-38-96-86 0-43 35-80 82-85 24-48 75-78 132-78 78 0 141 55 147 126 42 16 70 52 70 93 0 53-48 96-107 96h-61z"/>
+  <path fill="#cffafe" d="M336 330H183c-29 0-53-21-53-47 0-25 22-45 50-47 17-44 64-75 119-75 61 0 111 40 116 90 28 7 49 30 49 57 0 32-29 58-64 58h-64z"/>
+</svg>

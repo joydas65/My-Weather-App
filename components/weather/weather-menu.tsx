@@ -12,6 +12,8 @@ import {
   RefreshCw,
   Ruler,
   Search,
+  ShieldAlert,
+  Sparkles,
   SunMedium,
   ThermometerSun,
   Trash2,
@@ -69,6 +71,24 @@ const activeForecastItems: MenuItem[] = [
     href: "#current-weather",
     icon: ThermometerSun,
     label: "Current weather"
+  },
+  {
+    detail: "Tomorrow brief and planning signals",
+    href: "#smart-forecast",
+    icon: Sparkles,
+    label: "Smart forecast"
+  },
+  {
+    detail: "Next 24 hours at a glance",
+    href: "#hourly-timeline",
+    icon: Clock3,
+    label: "Hourly timeline"
+  },
+  {
+    detail: "Rain, heat, wind, cold, and visibility signals",
+    href: "#risk-watch",
+    icon: ShieldAlert,
+    label: "Risk watch"
   },
   {
     detail: "Precipitation and temperature trends",

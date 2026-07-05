@@ -4,7 +4,7 @@ A weather dashboard scaffolded with Next.js, React, TypeScript, Tailwind CSS, an
 
 ## Current State
 
-The repository now contains a Next.js App Router weather app with a realistic dashboard shell, live weather lookup, typed empty/loading/error states, dynamic weather condition icons, formatter utilities, resilient Chart.js forecast visualizations, a keyboard-accessible drawer opened from a hamburger menu, persisted menu preferences, and unit tests. Legacy static HTML/CSS/JS files have been retired so the Next.js app is the single active implementation.
+The repository now contains a Next.js App Router weather app with a realistic dashboard shell, live weather lookup, typed empty/loading/error states, dynamic weather condition icons, formatter utilities, resilient Chart.js forecast visualizations, Tomorrow brief planning, an Hourly timeline, Smart insights, Risk watch safety cards, PWA installability, Offline Last Forecast recovery, a keyboard-accessible drawer opened from a hamburger menu, persisted menu preferences, and unit tests. Legacy static HTML/CSS/JS files have been retired so the Next.js app is the single active implementation.
 
 ## Tech Stack
 
@@ -75,6 +75,12 @@ The first screen starts in an empty location state instead of showing demo weath
 
 Forecast charts use Chart.js through `react-chartjs-2` for precipitation probability and min/max temperature trends. The chart surface includes responsive labels, styled tooltips, summary chips, chart empty/error handling, and component behavior tests for ready, empty, and invalid-data states.
 
+Open-Meteo hourly forecast data powers the Tomorrow brief, Hourly timeline, and Smart insights sections. The `lib/weather/decision-support.ts` helpers keep best-window selection, next-hour filtering, and practical planning signals testable outside the UI.
+
+Risk watch uses typed weather risk signals to surface rain, storm, heat, cold, wind, and visibility concerns from the current and hourly forecast. The `lib/weather/risk-signals.ts` rules generate severity, timing, and action guidance so Weather safety signals stay explainable and testable.
+
+The app is installable as a PWA through `public/manifest.webmanifest`, SVG app icons, and a lightweight service worker. The dashboard stores the last successful forecast through `lib/weather/offline-cache.ts`; when the browser is offline, it can show that saved forecast with a persistent Offline Last Forecast banner and a clear reconnect-to-refresh message.
+
 The UI is mobile-first: the first screen exposes search and current-location actions immediately, loading and alert states use accessible React components, forecast chart cards shrink safely on narrow phones, and the sun/moon timing view renders compact mobile cards before switching to a desktop table. Legacy loading GIFs, unrelated brand artwork, bitmap chart decorations, and demo weather data are retired.
 
 The hamburger menu is available on mobile and desktop. Its keyboard-accessible drawer provides search/location actions, saved and recent locations, unit preferences, dashboard section jumps, Open-Meteo provider context, last-updated status, and a refresh action after weather data has loaded. Menu preferences are normalized through shared helpers and persisted in `localStorage` with resilient defaults when browser storage is unavailable.
@@ -83,9 +89,11 @@ The hamburger menu is available on mobile and desktop. Its keyboard-accessible d
 
 - `app/` contains Next.js routes, layout, and global styles.
 - `app/api/weather/` contains the server-side weather endpoint used by search and geolocation.
-- `components/weather/` contains dashboard UI pieces, including metric cards, resilient forecast charts, timing tables, notices, the hamburger menu drawer, and dynamic condition icons.
-- `lib/weather/` contains typed weather data helpers, API error contracts, chart series builders, sun/moon helpers, the Open-Meteo adapter, menu preference helpers, and unit-aware formatters.
-- `tests/` contains unit tests for shared weather logic, chart series, forecast chart behavior, provider mapping, astronomy helpers, and component behavior.
+- `components/weather/` contains dashboard UI pieces, including metric cards, tomorrow planning, the hourly timeline, smart insights, risk cards, offline status, resilient forecast charts, timing tables, notices, the hamburger menu drawer, and dynamic condition icons.
+- `components/pwa/` contains the service worker registration component.
+- `lib/weather/` contains typed weather data helpers, API error contracts, chart series builders, decision-support helpers, risk-signal helpers, offline cache helpers, sun/moon helpers, the Open-Meteo adapter, menu preference helpers, and unit-aware formatters.
+- `public/manifest.webmanifest`, `public/sw.js`, and `public/icons/` provide the installable PWA shell.
+- `tests/` contains unit tests for shared weather logic, decision-support behavior, risk-signal behavior, offline cache behavior, chart series, forecast chart behavior, provider mapping, astronomy helpers, and component behavior.
 - `scripts/audit-consistency.mjs` checks documentation, assets, and test coverage consistency.
 - `vercel.json` pins the Vercel framework preset to Next.js for production deployments.
 

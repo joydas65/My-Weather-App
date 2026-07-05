@@ -18,15 +18,20 @@ import {
   Sunrise,
   Sunset,
   Thermometer,
+  WifiOff,
   Wind
 } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { DailyForecast } from "@/components/weather/daily-forecast";
 import { ForecastChart } from "@/components/weather/forecast-chart";
+import { HourlyTimeline } from "@/components/weather/hourly-timeline";
 import { MetricCard } from "@/components/weather/metric-card";
+import { SmartInsights } from "@/components/weather/smart-insights";
 import { SunMoonTable } from "@/components/weather/sun-moon-table";
+import { TomorrowBriefCard } from "@/components/weather/tomorrow-brief";
 import { WeatherConditionIcon } from "@/components/weather/weather-condition-icon";
 import { WeatherMenuDrawer } from "@/components/weather/weather-menu";
+import { WeatherRiskCards } from "@/components/weather/weather-risk-cards";
 import {
   isWeatherApiFailure,
   type WeatherApiResponse,
@@ -56,6 +61,12 @@ import {
   type WeatherMenuPreferences,
   type WeatherUnitPreferences
 } from "@/lib/weather/preferences";
+import {
+  createWeatherOfflineSnapshot,
+  readLastWeatherSnapshot,
+  writeLastWeatherSnapshot,
+  type WeatherOfflineSnapshot
+} from "@/lib/weather/offline-cache";
 
 type WeatherDashboardProps = {
   initialWeather?: WeatherReport;
@@ -106,6 +117,9 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
   );
   const [query, setQuery] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
+  const [offlineSnapshot, setOfflineSnapshot] =
+    useState<WeatherOfflineSnapshot | null>(null);
   const [lastRequest, setLastRequest] = useState<WeatherRetry | null>(null);
   const [menuPreferences, setMenuPreferences] =
     useState<WeatherMenuPreferences>(() => readWeatherMenuPreferences());
@@ -136,6 +150,28 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
     writeWeatherMenuPreferences(menuPreferences);
   }, [menuPreferences]);
 
+  useEffect(() => {
+    const cachedSnapshot = readLastWeatherSnapshot();
+
+    function syncNetworkState() {
+      setIsOffline(navigator.onLine === false);
+    }
+
+    syncNetworkState();
+
+    if (!initialWeather && navigator.onLine === false && cachedSnapshot) {
+      showOfflineSnapshot(cachedSnapshot);
+    }
+
+    window.addEventListener("online", syncNetworkState);
+    window.addEventListener("offline", syncNetworkState);
+
+    return () => {
+      window.removeEventListener("online", syncNetworkState);
+      window.removeEventListener("offline", syncNetworkState);
+    };
+  }, [initialWeather]);
+
   function showSettledNotice(
     message: string,
     tone: NoticeState["tone"] = "info"
@@ -159,6 +195,23 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
     state: LoadingState,
     successMessage: (weatherReport: WeatherReport) => string
   ) {
+    if (isBrowserOffline()) {
+      if (loadOfflineSnapshot()) {
+        return;
+      }
+
+      setViewState({
+        status: "api-error",
+        code: "WEATHER_UNAVAILABLE",
+        message: "You are offline and no saved forecast is available yet.",
+        retry: {
+          endpoint,
+          loading: state
+        }
+      });
+      return;
+    }
+
     setViewState({ status: "loading", loading: state });
 
     try {
@@ -210,6 +263,8 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
 
       setWeather(payload.weather);
       setLastRequest({ endpoint, loading: state });
+      setOfflineSnapshot(null);
+      writeLiveSnapshot(payload.weather, endpoint);
       setMenuPreferences((current) =>
         addRecentLocation(
           current,
@@ -219,6 +274,10 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
       setQuery("");
       showSettledNotice(successMessage(payload.weather), "success");
     } catch (error) {
+      if (isBrowserOffline() && loadOfflineSnapshot()) {
+        return;
+      }
+
       const message =
         error instanceof Error
           ? error.message
@@ -315,6 +374,46 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
       viewState.retry.endpoint,
       viewState.retry.loading,
       () => "Forecast updated"
+    );
+  }
+
+  function showOfflineSnapshot(snapshot: WeatherOfflineSnapshot) {
+    setWeather(snapshot.weather);
+    setOfflineSnapshot(snapshot);
+    setLastRequest({
+      endpoint: snapshot.endpoint,
+      loading: {
+        title: `Refreshing ${snapshot.label}`,
+        detail: "Reconnecting to update the saved forecast."
+      }
+    });
+    setMenuPreferences((current) =>
+      addRecentLocation(
+        current,
+        createWeatherMenuLocation(
+          snapshot.weather,
+          snapshot.endpoint,
+          snapshot.cachedAt
+        )
+      )
+    );
+    setViewState({ status: "ready" });
+  }
+
+  function loadOfflineSnapshot() {
+    const snapshot = readLastWeatherSnapshot();
+
+    if (!snapshot) {
+      return false;
+    }
+
+    showOfflineSnapshot(snapshot);
+    return true;
+  }
+
+  function writeLiveSnapshot(weatherReport: WeatherReport, endpoint: string) {
+    writeLastWeatherSnapshot(
+      createWeatherOfflineSnapshot(weatherReport, endpoint)
     );
   }
 
@@ -496,6 +595,13 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
           state={viewState}
         />
 
+        <OfflineStatusBanner
+          isLoading={isLoading}
+          isOffline={isOffline}
+          onRefresh={weather && lastRequest ? refreshWeather : undefined}
+          snapshot={offlineSnapshot}
+        />
+
         {weather && sunStatus ? (
           <WeatherReportSections
             isLoading={isLoading}
@@ -506,6 +612,70 @@ export function WeatherDashboard({ initialWeather }: WeatherDashboardProps) {
         ) : null}
       </section>
     </main>
+  );
+}
+
+export function OfflineStatusBanner({
+  isLoading,
+  isOffline,
+  onRefresh,
+  snapshot
+}: {
+  isLoading: boolean;
+  isOffline: boolean;
+  onRefresh?: () => void;
+  snapshot: WeatherOfflineSnapshot | null;
+}) {
+  if (!isOffline && !snapshot) {
+    return null;
+  }
+
+  const timestamp =
+    snapshot?.weather.current.timezone && snapshot.cachedAt
+      ? formatTime(snapshot.cachedAt, snapshot.weather.current.timezone)
+      : null;
+  const title = isOffline
+    ? snapshot
+      ? "Offline mode"
+      : "Offline"
+    : "Cached forecast";
+  const detail = snapshot
+    ? `Showing ${snapshot.label} from ${timestamp ?? "the last update"}.`
+    : "No saved forecast is available yet. Search once while online to enable offline access.";
+
+  return (
+    <section className="rounded-lg border border-cyan-200 bg-cyan-50/80 p-4 text-cyan-950 shadow-sm shadow-cyan-100/70">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-cyan-700 ring-1 ring-cyan-100">
+            <WifiOff aria-hidden="true" className="h-5 w-5" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold">{title}</p>
+            <p className="mt-1 text-sm leading-6 text-cyan-800">{detail}</p>
+            {snapshot ? (
+              <p className="mt-1 text-xs font-medium text-cyan-700">
+                Reconnect to refresh live weather.
+              </p>
+            ) : null}
+          </div>
+        </div>
+        {!isOffline && onRefresh ? (
+          <button
+            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-cyan-700 px-3 text-sm font-semibold text-white transition hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isLoading}
+            onClick={onRefresh}
+            type="button"
+          >
+            <RefreshCw
+              aria-hidden="true"
+              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
+            Refresh live
+          </button>
+        ) : null}
+      </div>
+    </section>
   );
 }
 
@@ -627,6 +797,22 @@ function WeatherReportSections({
               value={formatPercent(weather.current.cloudCover)}
             />
           </div>
+        </section>
+
+        <section
+          className="grid scroll-mt-4 gap-4 xl:grid-cols-[1.05fr_0.95fr]"
+          id="smart-forecast"
+        >
+          <TomorrowBriefCard units={units} weather={weather} />
+          <SmartInsights units={units} weather={weather} />
+        </section>
+
+        <section className="scroll-mt-4" id="hourly-timeline">
+          <HourlyTimeline units={units} weather={weather} />
+        </section>
+
+        <section className="scroll-mt-4" id="risk-watch">
+          <WeatherRiskCards units={units} weather={weather} />
         </section>
 
         <section className="grid min-w-0 gap-4 xl:grid-cols-2 scroll-mt-4" id="forecast-charts">
@@ -871,4 +1057,8 @@ function NoticePanel({ notice }: { notice: NoticeState }) {
       {notice.message}
     </div>
   );
+}
+
+function isBrowserOffline() {
+  return typeof navigator !== "undefined" && navigator.onLine === false;
 }

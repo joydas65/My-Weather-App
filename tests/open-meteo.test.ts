@@ -51,6 +51,18 @@ describe("Open-Meteo weather adapter", () => {
         precipitation_probability_max: [2, 1],
         sunrise: [1783083158, 1783169589],
         sunset: [1783136113, 1783222502]
+      },
+      hourly: {
+        time: [1783144800, 1783148400],
+        temperature_2m: [13, 14],
+        relative_humidity_2m: [96, 88],
+        apparent_temperature: [11.1, 12.5],
+        is_day: [1, 1],
+        weather_code: [2, 61],
+        cloud_cover: [72, 82],
+        precipitation_probability: [12, 64],
+        wind_speed_10m: [5.1, 6.2],
+        wind_direction_10m: [269, 271]
       }
     };
 
@@ -95,6 +107,14 @@ describe("Open-Meteo weather adapter", () => {
       source: "estimated"
     });
     expect(report.daily[1].summary).toBe("Thunderstorm risk");
+    expect(report.hourly).toHaveLength(2);
+    expect(report.hourly[1]).toMatchObject({
+      condition: "rain",
+      description: "Slight rain",
+      precipitationChance: 64,
+      temperatureC: 14,
+      windSpeedMs: 6.2
+    });
     expect(report.metadata).toMatchObject({
       provider: "Open-Meteo",
       attribution: "Forecast and geocoding data from Open-Meteo"

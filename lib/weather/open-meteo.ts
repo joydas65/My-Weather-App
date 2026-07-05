@@ -1,5 +1,6 @@
 import type {
   DailyForecast,
+  HourlyForecast,
   WeatherCondition,
   WeatherReport
 } from "@/lib/weather/types";
@@ -32,6 +33,18 @@ const DAILY_VARIABLES = [
   "sunset"
 ];
 
+const HOURLY_VARIABLES = [
+  "temperature_2m",
+  "relative_humidity_2m",
+  "apparent_temperature",
+  "is_day",
+  "weather_code",
+  "cloud_cover",
+  "precipitation_probability",
+  "wind_speed_10m",
+  "wind_direction_10m"
+];
+
 type OpenMeteoCurrent = {
   time?: number;
   temperature_2m?: number;
@@ -57,11 +70,25 @@ type OpenMeteoDaily = {
   sunset?: number[];
 };
 
+type OpenMeteoHourly = {
+  time?: number[];
+  temperature_2m?: number[];
+  relative_humidity_2m?: number[];
+  apparent_temperature?: number[];
+  is_day?: number[];
+  weather_code?: number[];
+  cloud_cover?: number[];
+  precipitation_probability?: number[];
+  wind_speed_10m?: number[];
+  wind_direction_10m?: number[];
+};
+
 export type OpenMeteoForecastResponse = {
   timezone?: string;
   utc_offset_seconds?: number;
   current?: OpenMeteoCurrent;
   daily?: OpenMeteoDaily;
+  hourly?: OpenMeteoHourly;
 };
 
 type OpenMeteoSearchResult = {
@@ -294,6 +321,7 @@ export async function fetchWeatherByCoordinates(location: WeatherLocation) {
     current: CURRENT_VARIABLES.join(","),
     daily: DAILY_VARIABLES.join(","),
     forecast_days: "8",
+    hourly: HOURLY_VARIABLES.join(","),
     latitude: String(location.latitude),
     longitude: String(location.longitude),
     timeformat: "unixtime",
@@ -322,10 +350,11 @@ export function mapOpenMeteoResponse(
 ): WeatherReport {
   const current = response.current;
   const daily = response.daily;
+  const hourly = response.hourly;
   const timezone = response.timezone ?? "UTC";
   const utcOffsetSeconds = response.utc_offset_seconds ?? 0;
 
-  if (!current || !daily?.time?.length) {
+  if (!current || !daily?.time?.length || !hourly?.time?.length) {
     throw new WeatherLookupError(
       "WEATHER_UNAVAILABLE",
       "Weather provider returned an incomplete forecast."
@@ -362,6 +391,42 @@ export function mapOpenMeteoResponse(
       })
     };
   });
+  const hourlyForecasts: HourlyForecast[] = hourly.time.map((time, index) => {
+    const hourWeather = mapWeatherCode(hourly.weather_code?.[index]);
+
+    return {
+      time: unixToIso(time),
+      condition: hourWeather.condition,
+      description: hourWeather.description,
+      isDay: numberAt(hourly.is_day, index, "hourly daylight") === 1,
+      temperatureC: numberAt(
+        hourly.temperature_2m,
+        index,
+        "hourly temperature"
+      ),
+      feelsLikeC: numberAt(
+        hourly.apparent_temperature,
+        index,
+        "hourly apparent temperature"
+      ),
+      precipitationChance: numberAt(
+        hourly.precipitation_probability,
+        index,
+        "hourly precipitation probability"
+      ),
+      cloudCover: numberAt(hourly.cloud_cover, index, "hourly cloud cover"),
+      windSpeedMs: numberAt(
+        hourly.wind_speed_10m,
+        index,
+        "hourly wind speed"
+      ),
+      windDegree: numberAt(
+        hourly.wind_direction_10m,
+        index,
+        "hourly wind direction"
+      )
+    };
+  });
 
   return {
     current: {
@@ -392,6 +457,7 @@ export function mapOpenMeteoResponse(
       sunset: unixToIso(numberAt(daily.sunset, 0, "current sunset"))
     },
     daily: dailyForecasts,
+    hourly: hourlyForecasts,
     metadata: {
       provider: "Open-Meteo",
       fetchedAt: new Date().toISOString(),

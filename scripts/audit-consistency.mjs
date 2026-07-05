@@ -18,6 +18,10 @@ const menuPreferenceTests = await readFile(
   join(root, "tests", "menu-preferences.test.ts"),
   "utf8"
 );
+const offlineCacheTests = await readFile(
+  join(root, "tests", "offline-cache.test.ts"),
+  "utf8"
+);
 const uxStructureTests = await readFile(
   join(root, "tests", "ux-structure.test.ts"),
   "utf8"
@@ -27,9 +31,21 @@ const weatherComponentTests = await readFile(
   join(root, "tests", "weather-components.test.tsx"),
   "utf8"
 );
+const decisionSupportTests = await readFile(
+  join(root, "tests", "decision-support.test.ts"),
+  "utf8"
+);
+const riskSignalTests = await readFile(
+  join(root, "tests", "risk-signals.test.ts"),
+  "utf8"
+);
 const weatherTypes = await readFile(join(root, "lib", "weather", "types.ts"), "utf8");
 const weatherPreferences = await readFile(
   join(root, "lib", "weather", "preferences.ts"),
+  "utf8"
+);
+const offlineCache = await readFile(
+  join(root, "lib", "weather", "offline-cache.ts"),
   "utf8"
 );
 const astronomyHelpers = await readFile(
@@ -37,8 +53,32 @@ const astronomyHelpers = await readFile(
   "utf8"
 );
 const chartData = await readFile(join(root, "lib", "weather", "chart-data.ts"), "utf8");
+const decisionSupport = await readFile(
+  join(root, "lib", "weather", "decision-support.ts"),
+  "utf8"
+);
+const riskSignals = await readFile(
+  join(root, "lib", "weather", "risk-signals.ts"),
+  "utf8"
+);
 const forecastChart = await readFile(
   join(root, "components", "weather", "forecast-chart.tsx"),
+  "utf8"
+);
+const hourlyTimeline = await readFile(
+  join(root, "components", "weather", "hourly-timeline.tsx"),
+  "utf8"
+);
+const smartInsights = await readFile(
+  join(root, "components", "weather", "smart-insights.tsx"),
+  "utf8"
+);
+const tomorrowBrief = await readFile(
+  join(root, "components", "weather", "tomorrow-brief.tsx"),
+  "utf8"
+);
+const weatherRiskCards = await readFile(
+  join(root, "components", "weather", "weather-risk-cards.tsx"),
   "utf8"
 );
 const weatherApiContract = await readFile(join(root, "lib", "weather", "api.ts"), "utf8");
@@ -54,11 +94,23 @@ const weatherDashboard = await readFile(
   join(root, "components", "weather", "weather-dashboard.tsx"),
   "utf8"
 );
+const pwaRegister = await readFile(
+  join(root, "components", "pwa", "pwa-register.tsx"),
+  "utf8"
+);
 const weatherMenu = await readFile(
   join(root, "components", "weather", "weather-menu.tsx"),
   "utf8"
 );
 const homePage = await readFile(join(root, "app", "page.tsx"), "utf8");
+const appLayout = await readFile(join(root, "app", "layout.tsx"), "utf8");
+const webManifest = await readFile(join(root, "public", "manifest.webmanifest"), "utf8");
+const serviceWorker = await readFile(join(root, "public", "sw.js"), "utf8");
+const pwaIcon = await readFile(join(root, "public", "icons", "weather-icon.svg"), "utf8");
+const pwaMaskableIcon = await readFile(
+  join(root, "public", "icons", "weather-maskable.svg"),
+  "utf8"
+);
 const conditionIcon = await readFile(
   join(root, "components", "weather", "weather-condition-icon.tsx"),
   "utf8"
@@ -151,15 +203,56 @@ if (
   failures.push("The hamburger menu, location, unit preference, and local persistence expectations are not documented consistently.");
 }
 
+if (
+  !readme.includes("Tomorrow brief") ||
+  !readme.includes("Hourly timeline") ||
+  !readme.includes("Smart insights") ||
+  !readme.includes("decision-support") ||
+  !scaffoldAudit.includes("Tomorrow brief") ||
+  !scaffoldAudit.includes("Hourly timeline") ||
+  !scaffoldAudit.includes("Smart insights") ||
+  !scaffoldAudit.includes("decision-support")
+) {
+  failures.push("Tomorrow brief, hourly timeline, smart insights, and decision-support expectations are not documented consistently.");
+}
+
+if (
+  !readme.includes("Risk watch") ||
+  !readme.includes("Weather safety signals") ||
+  !readme.includes("risk-signals") ||
+  !scaffoldAudit.includes("Risk watch") ||
+  !scaffoldAudit.includes("weather risk signals") ||
+  !scaffoldAudit.includes("risk-signals")
+) {
+  failures.push("Risk watch, weather risk signals, and risk-signals expectations are not documented consistently.");
+}
+
+if (
+  !readme.includes("PWA") ||
+  !readme.includes("Offline Last Forecast") ||
+  !readme.includes("last successful forecast") ||
+  !readme.includes("service worker") ||
+  !readme.includes("manifest.webmanifest") ||
+  !scaffoldAudit.includes("PWA") ||
+  !scaffoldAudit.includes("Offline Last Forecast") ||
+  !scaffoldAudit.includes("last successful forecast") ||
+  !scaffoldAudit.includes("service worker") ||
+  !scaffoldAudit.includes("manifest.webmanifest")
+) {
+  failures.push("PWA installability, Offline Last Forecast, service worker, and manifest expectations are not documented consistently.");
+}
+
 if (readme.includes("OPENWEATHER_API_KEY") || scaffoldAudit.includes("OPENWEATHER_API_KEY")) {
   failures.push("OpenWeather environment key documentation should remain retired.");
 }
 
 if (
   !openMeteoAdapter.includes("https://api.open-meteo.com/v1/forecast") ||
-  !openMeteoAdapter.includes("https://geocoding-api.open-meteo.com/v1/search")
+  !openMeteoAdapter.includes("https://geocoding-api.open-meteo.com/v1/search") ||
+  !openMeteoAdapter.includes("HOURLY_VARIABLES") ||
+  !openMeteoAdapter.includes("precipitation_probability")
 ) {
-  failures.push("Open-Meteo forecast and geocoding endpoints are not centralized in the adapter.");
+  failures.push("Open-Meteo forecast, geocoding, and hourly timeline inputs are not centralized in the adapter.");
 }
 
 if (
@@ -192,8 +285,14 @@ if (homePage.includes("sampleWeather") || weatherDashboard.includes("sampleWeath
 }
 
 const requiredTypeNames = [
+  "HourlyForecast",
   "SunMoonTiming",
+  "TomorrowBrief",
   "WeatherReportMetadata",
+  "WeatherInsight",
+  "WeatherRiskSignal",
+  "WeatherRiskSeverity",
+  "WeatherRiskCategory",
   "PrecipitationChartPoint",
   "TemperatureChartPoint"
 ];
@@ -219,6 +318,27 @@ if (
 }
 
 if (
+  !decisionSupport.includes("buildTomorrowBrief") ||
+  !decisionSupport.includes("buildWeatherInsights") ||
+  !decisionSupport.includes("selectNextHourlyForecast") ||
+  !decisionSupport.includes("findBestWeatherWindow")
+) {
+  failures.push("Decision-support helpers must centralize tomorrow brief, hourly selection, smart insights, and best-window behavior.");
+}
+
+if (
+  !riskSignals.includes("buildWeatherRiskSignals") ||
+  !riskSignals.includes("Heavy rain risk") ||
+  !riskSignals.includes("High heat risk") ||
+  !riskSignals.includes("Freezing risk") ||
+  !riskSignals.includes("High wind risk") ||
+  !riskSignals.includes("Poor visibility risk") ||
+  !riskSignals.includes("No elevated risks")
+) {
+  failures.push("Risk-signal helpers must centralize rain, heat, cold, wind, visibility, storm, and low-risk fallback behavior.");
+}
+
+if (
   !forecastChart.includes("buildForecastChartModel") ||
   !forecastChart.includes("ForecastChartStatePanel") ||
   !forecastChart.includes("ForecastChartErrorBoundary") ||
@@ -238,6 +358,20 @@ if (
 }
 
 if (
+  !tomorrowBrief.includes("Tomorrow brief") ||
+  !tomorrowBrief.includes("Best window") ||
+  !hourlyTimeline.includes("Hourly timeline") ||
+  !hourlyTimeline.includes("Next 24 hours") ||
+  !smartInsights.includes("Smart insights") ||
+  !smartInsights.includes("Planning signals") ||
+  !weatherRiskCards.includes("Risk watch") ||
+  !weatherRiskCards.includes("Weather safety signals") ||
+  !weatherRiskCards.includes("buildWeatherRiskSignals")
+) {
+  failures.push("Tomorrow brief, hourly timeline, smart insight, and risk watch components must expose the expected planning surfaces.");
+}
+
+if (
   !weatherDashboard.includes("metadata.fetchedAt") ||
   !weatherDashboard.includes("WEATHER_VIEW_STATES") ||
   !weatherDashboard.includes("WeatherStatePanel") ||
@@ -246,6 +380,10 @@ if (
   !weatherDashboard.includes("NoticePanel") ||
   !weatherDashboard.includes("WeatherConditionIcon") ||
   !weatherDashboard.includes("WeatherMenuDrawer") ||
+  !weatherDashboard.includes("TomorrowBriefCard") ||
+  !weatherDashboard.includes("HourlyTimeline") ||
+  !weatherDashboard.includes("SmartInsights") ||
+  !weatherDashboard.includes("WeatherRiskCards") ||
   !weatherDashboard.includes("lastRequest") ||
   !weatherDashboard.includes("refreshWeather") ||
   !weatherDashboard.includes("readWeatherMenuPreferences") ||
@@ -275,6 +413,9 @@ if (
   !weatherMenu.includes("Temperature") ||
   !weatherMenu.includes("Measurement preferences") ||
   !weatherMenu.includes("Refresh weather") ||
+  !weatherMenu.includes("#smart-forecast") ||
+  !weatherMenu.includes("#hourly-timeline") ||
+  !weatherMenu.includes("#risk-watch") ||
   !weatherMenu.includes("#forecast-charts") ||
   !weatherMenu.includes("#daily-outlook") ||
   !weatherMenu.includes("#sun-moon")
@@ -293,6 +434,44 @@ if (
   !weatherPreferences.includes("updateWeatherUnitPreference")
 ) {
   failures.push("Weather menu preferences must centralize unit, saved location, recent location, and localStorage behavior.");
+}
+
+if (
+  !offlineCache.includes("WEATHER_OFFLINE_SNAPSHOT_KEY") ||
+  !offlineCache.includes("createWeatherOfflineSnapshot") ||
+  !offlineCache.includes("readLastWeatherSnapshot") ||
+  !offlineCache.includes("writeLastWeatherSnapshot") ||
+  !offlineCache.includes("normalizeWeatherOfflineSnapshot")
+) {
+  failures.push("Offline forecast cache helpers must centralize last successful forecast persistence.");
+}
+
+if (
+  !appLayout.includes('manifest: "/manifest.webmanifest"') ||
+  !appLayout.includes("PwaRegister") ||
+  !webManifest.includes('"display": "standalone"') ||
+  !webManifest.includes('"theme_color": "#0891b2"') ||
+  !webManifest.includes("/icons/weather-icon.svg") ||
+  !webManifest.includes("/icons/weather-maskable.svg") ||
+  !pwaRegister.includes('navigator.serviceWorker.register("/sw.js")') ||
+  !serviceWorker.includes("my-weather-app-shell-v1") ||
+  !serviceWorker.includes("networkFirstNavigation") ||
+  !serviceWorker.includes('url.pathname.startsWith("/api/")') ||
+  !pwaIcon.includes("My Weather App icon") ||
+  !pwaMaskableIcon.includes("maskable icon")
+) {
+  failures.push("PWA manifest, icons, service worker registration, and app-shell caching must stay wired.");
+}
+
+if (
+  !weatherDashboard.includes("OfflineStatusBanner") ||
+  !weatherDashboard.includes("readLastWeatherSnapshot") ||
+  !weatherDashboard.includes("writeLastWeatherSnapshot") ||
+  !weatherDashboard.includes("createWeatherOfflineSnapshot") ||
+  !weatherDashboard.includes("Offline mode") ||
+  !weatherDashboard.includes("Reconnect to refresh live weather")
+) {
+  failures.push("Dashboard must expose offline status and hydrate the last successful forecast when offline.");
 }
 
 if (
@@ -321,11 +500,16 @@ if (
   !weatherDashboard.includes("lg:flex-row") ||
   !weatherDashboard.includes("lg:grid-cols") ||
   !weatherDashboard.includes("xl:grid-cols") ||
+  !weatherDashboard.includes('id="smart-forecast"') ||
+  !weatherDashboard.includes('id="hourly-timeline"') ||
+  !weatherDashboard.includes('id="risk-watch"') ||
   !weatherDashboard.includes("grid min-w-0 gap-4 xl:grid-cols-2") ||
   !forecastChart.includes("min-w-0 space-y-3") ||
-  !forecastChart.includes("h-72 min-w-0 w-full")
+  !forecastChart.includes("h-72 min-w-0 w-full") ||
+  !hourlyTimeline.includes("overflow-x-auto") ||
+  !hourlyTimeline.includes('data-testid="hourly-timeline-scroll"')
 ) {
-  failures.push("The dashboard and forecast charts must keep mobile-first responsive layout classes that prevent narrow-phone overflow.");
+  failures.push("The dashboard, forecast charts, and hourly timeline must keep mobile-first responsive layout classes that prevent narrow-phone overflow.");
 }
 
 if (
@@ -428,7 +612,21 @@ for (const coveredName of menuPreferenceCoverage) {
   }
 }
 
-const openMeteoCoverage = ["mapWeatherCode", "mapOpenMeteoResponse"];
+const offlineCacheCoverage = [
+  "createWeatherOfflineSnapshot",
+  "readLastWeatherSnapshot",
+  "writeLastWeatherSnapshot",
+  "normalizeWeatherOfflineSnapshot",
+  "WEATHER_OFFLINE_SNAPSHOT_KEY"
+];
+
+for (const coveredName of offlineCacheCoverage) {
+  if (!offlineCacheTests.includes(coveredName)) {
+    failures.push(`${coveredName} is missing offline cache test coverage.`);
+  }
+}
+
+const openMeteoCoverage = ["mapWeatherCode", "mapOpenMeteoResponse", "hourly"];
 
 for (const coveredName of openMeteoCoverage) {
   if (!openMeteoTests.includes(coveredName)) {
@@ -454,6 +652,35 @@ const chartDataCoverage = ["buildPrecipitationSeries", "buildTemperatureSeries"]
 for (const coveredName of chartDataCoverage) {
   if (!chartDataTests.includes(coveredName)) {
     failures.push(`${coveredName} is missing chart-data test coverage.`);
+  }
+}
+
+const decisionSupportCoverage = [
+  "buildTomorrowBrief",
+  "buildWeatherInsights",
+  "selectNextHourlyForecast",
+  "Umbrella window",
+  "Best outdoor window"
+];
+
+for (const coveredName of decisionSupportCoverage) {
+  if (!decisionSupportTests.includes(coveredName)) {
+    failures.push(`${coveredName} is missing decision-support test coverage.`);
+  }
+}
+
+const riskSignalCoverage = [
+  "buildWeatherRiskSignals",
+  "Storm risk",
+  "Heavy rain risk",
+  "High heat risk",
+  "Poor visibility risk",
+  "No elevated risks"
+];
+
+for (const coveredName of riskSignalCoverage) {
+  if (!riskSignalTests.includes(coveredName)) {
+    failures.push(`${coveredName} is missing risk-signal test coverage.`);
   }
 }
 
@@ -485,7 +712,11 @@ const componentCoverage = [
   "WeatherConditionIcon",
   "getWeatherConditionPresentation",
   "SunMoonTable",
-  "WeatherMenuDrawer"
+  "WeatherMenuDrawer",
+  "TomorrowBriefCard",
+  "HourlyTimeline",
+  "SmartInsights",
+  "WeatherRiskCards"
 ];
 
 for (const coveredName of componentCoverage) {
@@ -501,6 +732,9 @@ const uxStructureCoverage = [
   "hamburger menu",
   "WEATHER_MENU_PREFERENCES_KEY",
   "forecast chart cards",
+  "planning sections",
+  "Risk watch",
+  "PWA install",
   "mobile-friendly sun and moon"
 ];
 
